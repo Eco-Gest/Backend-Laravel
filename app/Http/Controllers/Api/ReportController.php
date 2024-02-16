@@ -5,15 +5,18 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail; 
 use Illuminate\Support\Facades\Log;
+use App\Services\UserService;
 
 class ReportController extends Controller
 {
+    protected UserService $userService;
+    public function __construct(UserService $userService)
+    {
+      $this->userService = $userService;
+    }
     public function submitReport(Request $request)
     {
-        $user = auth()->user();
-        if (!$user) {
-            return response()->json(['error' => 'User not found.'], 404);
-        }
+        $user = $this->userService->getUser();
 
         $validatedData = $request->validate([
             'ID' => 'required',

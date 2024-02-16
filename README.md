@@ -35,6 +35,9 @@ ou
 
 `php artisan migrate:fresh --seed`
 
+## Créer un lien pour stocker les images
+
+`php artisan storage:link`
 
 ## Adminer est disponible ici :
 * http://localhost:9081
@@ -46,3 +49,4 @@ ou
  ## Jouer les tests 
 
  `composer test`
+

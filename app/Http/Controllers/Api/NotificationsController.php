@@ -8,17 +8,21 @@ use App\Models\Like;
 use App\Models\Post;
 use App\Models\Subscription;
 use App\Models\User;
-use App\Notifications\PostLiked;
+use App\Services\UserService;
 
 class NotificationsController extends Controller
 {
+    
+    protected UserService $userService;
+    public function __construct(UserService $userService)
+    {
+      $this->userService = $userService;
+    }
 
     public function index()
     {
-        $userAuth = auth()->user();
-        if (!$userAuth) {
-            return response()->json(['error' => 'User not found.'], 404);
-        }
+        $userAuth = $this->userService->getUser();
+
         $notifications = [];
         foreach ($userAuth->notifications as $notification) {
             $notif = [];

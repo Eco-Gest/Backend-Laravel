@@ -11,7 +11,7 @@ use DateTime;
 class PostService
 {
 
-    public static function addAuthorPostToUserPostParticipation(Post $post)
+    public function addAuthorPostToUserPostParticipation(Post $post)
     {
         if ($post->type === 'action') {
             $isCompleted = true;
@@ -26,10 +26,10 @@ class PostService
         ]);
         $userPostParticipation->save();
 
-        self::createUserPointCategoryWithZeroPoint($post, $userPostParticipation->participant_id);
+        $this->createUserPointCategoryWithZeroPoint($post, $userPostParticipation->participant_id);
     }
 
-    public static function createUserPointCategoryWithZeroPoint(Post $post, int $partcipantId)
+    public function createUserPointCategoryWithZeroPoint(Post $post, int $partcipantId)
     {
         $userPointCategoryAlreadyExists = UserPointCategory::where(['user_id' => $partcipantId, 'category_id' => $post->category_id])->count();
         if ($userPointCategoryAlreadyExists == 0) {
@@ -44,7 +44,7 @@ class PostService
         }
     }
 
-    public static function searchByTitleOrDescriptionOrTag(string $q)
+    public function searchByTitleOrDescriptionOrTag(string $q)
     {
         // Participant lists with details
         $posts = Post::where('title', 'ILIKE', '%' . $q . '%')
@@ -69,7 +69,7 @@ class PostService
         return $posts;
     }
 
-    public static function getPostsByTag(string $tag)
+    public function getPostsByTag(string $tag)
     {
         // Posts qui contiennent le tag suivant 
         $tagModel = Tag::where('label', $tag)->first();
@@ -79,5 +79,19 @@ class PostService
         }
         return $tagModel->posts;
 
+    }
+
+    public function loadPostData (Post $post) 
+    {
+        $post->category;
+        $post->tags->setHidden([
+            "created_at",
+            "updated_at",
+            "pivot"
+        ]);
+        $post->like;
+        $post->comment->load('users');
+        $post->user->badge;
+        return $post;
     }
 }

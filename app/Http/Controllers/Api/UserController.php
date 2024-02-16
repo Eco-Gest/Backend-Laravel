@@ -12,51 +12,36 @@ use Illuminate\Http\Request;
 
 class UserController extends Controller
 {
-
-  public function getUser()
+  protected UserPointService $userPointService;
+  protected UserService $userService;
+  public function __construct(UserPointService $userPointService, UserService $userService)
   {
-    $user = auth()->user();
-    $user = User::where('id', $user->id)->first();
-
-    if (!$user) {
-      return response()->json(['error' => 'User not found.'], 404);
-    }
-
-    return $user;
+    $this->userPointService = $userPointService;
+    $this->userService = $userService;
   }
 
   public function getUserData()
   {
-    $user = $this->getUser();
-
-    if (!$user) {
-      return response()->json(['error' => 'User not found.'], 404);
-    }
+    $user = $this->userService->getUser();
 
     $user->badge;
     $user->userTrophy;
     $user->userPostParticipation;
     $user->follower;
     $user->following;
-    $user->total_point = UserPointService::userTotalPoints($user->id);
-    
+    $user->total_point = $this->userPointService->userTotalPoints($user->id);
+
     return response()->json($user);
   }
 
   public function show(int $userId)
   {
-    $userAuthenticated = $this->getUser();
-
-    $user = User::where('id', $userId)->first();
-
-    if (!$user) {
-      return response()->json(['error' => 'User not found.'], 404);
-    }
+    $user = $this->userService->getUser();
 
     $user->badge;
-    $user->total_point = UserPointService::userTotalPoints($user->id);
+    $user->total_point = $this->userPointService->userTotalPoints($user->id);
 
-    if (!UserService::checkIfCanAccessToRessource($user->id)) {
+    if (!$this->userService->checkIfCanAccessToRessource($user->id)) {
       $user->userTrophy = [];
       $user->userPostParticipation = [];
     } else {
@@ -71,14 +56,7 @@ class UserController extends Controller
 
   public function update(Request $request)
   {
-    $user = $this->getUser();
-
-    if ($user === null) {
-      return response()->json([
-        'message' => 'User not found.'
-      ], 404);
-    }
-
+    $user = $this->userService->getUser();
 
     $validated = $request->validate([
       'email' => 'nullable|string|email',
@@ -98,11 +76,8 @@ class UserController extends Controller
 
   public function destroy()
   {
-    $user = $this->getUser();
+    $user = $this->userService->getUser();
 
-    if (!$user) {
-      return response()->json(['error' => 'User not found.'], 404);
-    }
     $user->delete();
   }
 

@@ -21,10 +21,7 @@ class TagController extends Controller
      */
     public function store(Request $request)
     {
-        $user = auth()->user();
-        if (!$user) {
-            return response()->json(['error' => 'User not found.'], 404);
-        }
+        $user = $this->userService->getUser();
 
         $validated = $request->validate([
             'tag' => "required|string",

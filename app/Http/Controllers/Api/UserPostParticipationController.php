@@ -18,6 +18,17 @@ use App\Models\UserPointCategory;
 
 class UserPostParticipationController extends Controller
 {
+    protected UserPointService $userPointService;
+    protected PostService $postService;
+    protected UserService $userService;
+
+    public function __construct(UserPointService $userPointService, PostService $postService, UserService $userService)
+    {
+        $this->userPointService = $userPointService;
+        $this->postService = $postService;
+        $this->userService = $userService;
+    }
+
     /**
      * Get the participants of a post
      */
@@ -70,7 +81,7 @@ class UserPostParticipationController extends Controller
         ]);
         $userAlreadyParticipates = UserPostParticipation::where(['post_id' => $postId, 'participant_id' => $user->id])->first();
 
-        PostService::createUserPointCategoryWithZeroPoint($post, $user->id);
+        $this->postService->createUserPointCategoryWithZeroPoint($post, $user->id);
 
         $userPostParticipation->save();
         return response()->json($userPostParticipation);
@@ -84,7 +95,7 @@ class UserPostParticipationController extends Controller
         $userPostParticipation = UserPostParticipation::where('id', $id)->firstOrFail();
 
         $user = User::where('id', $userPostParticipation->participant_id)->first();
-        if (!UserService::checkIfCanAccessToRessource($user->id)) {
+        if (!$this->userService->checkIfCanAccessToRessource($user->id)) {
             return response()->json(['error' => 'User private'], 400);
         }
 
@@ -100,10 +111,7 @@ class UserPostParticipationController extends Controller
      */
     public function update(Request $request, int $postId)
     {
-        $user = auth()->user();
-        if (!$user) {
-            return response()->json(['error' => 'User not found.'], 404);
-        }
+        $user = $this->userService->getUser();
         $validated = $request->validate([
             'is_completed' => 'boolean',
         ]);
@@ -131,10 +139,7 @@ class UserPostParticipationController extends Controller
      */
     public function endChallenge(int $postId)
     {
-        $user = auth()->user();
-        if (!$user) {
-            return response()->json(['error' => 'User not found.'], 404);
-        }
+        $user = $this->userService->getUser();
 
         $userPostParticipation = UserPostParticipation::where(['participant_id' => $user->id, 'post_id' => $postId])->firstOrFail();
         $userPostParticipation->is_completed = true;
@@ -142,10 +147,10 @@ class UserPostParticipationController extends Controller
         $post = Post::where('id', $postId)->firstOrFail();
         $userPointCategory = UserPointCategory::where(['user_id' => $user->id, 'category_id' => $post->category_id])->firstOrFail();
 
-        UserPointService::updateUserCurrentPointCategory($post, $userPointCategory);
+        $this->userPointService->updateUserCurrentPointCategory($post, $userPointCategory);
 
         $userModel = User::where('id', $user->id)->firstOrFail();
-        UserPointService::setNewBadge($userModel);
+        $this->userPointService->setNewBadge($userModel);
 
         $userPostParticipation->update();
 
@@ -163,7 +168,7 @@ class UserPostParticipationController extends Controller
         if (!$userAuthenticated || !$user) {
             return response()->json(['error' => 'User not found.'], 404);
         }
-        if (!UserService::checkIfCanAccessToRessource($userId)) {
+        if (!$this->userService->checkIfCanAccessToRessource($userId)) {
             return response()->json(['error' => 'User private'], 400);
         }
 
@@ -178,7 +183,7 @@ class UserPostParticipationController extends Controller
     public function getPostsByUserCompleted(int $userId)
     {
         $user = User::where('id', $userId)->firstOrFail();
-        if (!UserService::checkIfCanAccessToRessource($userId)) {
+        if (!$this->userService->checkIfCanAccessToRessource($userId)) {
             return response()->json(['error' => 'User private'], 400);
         }
 
@@ -192,10 +197,7 @@ class UserPostParticipationController extends Controller
                 foreach ($post->userPostParticipation as $userPostParticipation) {
                     $userPostParticipation->users;
                 }
-                $post->category;
-                $post->like;
-                $post->comment->load('users');
-                $post->user->badge;
+                $post = $this->postService->loadPostData($post);
                 $userChallenges[] = $post;
             }
         }
@@ -209,7 +211,7 @@ class UserPostParticipationController extends Controller
     public function getPostsByUserAbandoned(int $userId)
     {
         $user = User::where('id', $userId)->firstOrFail();
-        if (!UserService::checkIfCanAccessToRessource($userId)) {
+        if (!$this->userService->checkIfCanAccessToRessource($userId)) {
             return response()->json(['error' => 'User private'], 400);
         }
 
@@ -226,11 +228,7 @@ class UserPostParticipationController extends Controller
                     foreach ($post->userPostParticipation as $userPostParticipation) {
                         $userPostParticipation->users;
                     }
-                    $post->category;
-                    $post->like;
-                    $post->comment->load('users');
-                    $post->user->badge;
-                    $userPostParticipationsAbandoned[] = $post;
+                    $post = $this->postService->loadPostData($post);
                 }
             }
 
@@ -245,7 +243,7 @@ class UserPostParticipationController extends Controller
     {
         $user = User::where('id', $userId)->firstOrFail();
         $user = User::where('id', $userId)->firstOrFail();
-        if (!UserService::checkIfCanAccessToRessource($userId)) {
+        if (!$this->userService->checkIfCanAccessToRessource($userId)) {
             return response()->json(['error' => 'User private'], 400);
         }
 
@@ -263,10 +261,7 @@ class UserPostParticipationController extends Controller
                     foreach ($post->userPostParticipation as $userPostParticipation) {
                         $userPostParticipation->users;
                     }
-                    $post->category;
-                    $post->like;
-                    $post->comment->load('users');
-                    $post->user->badge;
+                    $post = $this->postService->loadPostData($post);
                     $userPostParticipationsInProgress[] = $post;
                 }
             }
@@ -281,7 +276,7 @@ class UserPostParticipationController extends Controller
     public function getPostsByUserNext(int $userId)
     {
         $user = User::where('id', $userId)->firstOrFail();
-        if (!UserService::checkIfCanAccessToRessource($userId)) {
+        if (!$this->userService->checkIfCanAccessToRessource($userId)) {
             return response()->json(['error' => 'User private'], 400);
         }
 
@@ -298,10 +293,7 @@ class UserPostParticipationController extends Controller
                     foreach ($post->userPostParticipation as $userPostParticipation) {
                         $userPostParticipation->users;
                     }
-                    $post->category;
-                    $post->like;
-                    $post->comment->load('users');
-                    $post->user->badge;
+                    $post = $this->postService->loadPostData($post);
                     $userPostParticipationsNext[] = $post;
                 }
             }
@@ -315,10 +307,10 @@ class UserPostParticipationController extends Controller
     public function getUserActions(int $userId)
     {
         $user = User::where('id', $userId)->firstOrFail();
-        if (!UserService::checkIfCanAccessToRessource($userId)) {
+        if (!$this->userService->checkIfCanAccessToRessource($userId)) {
             return response()->json(['error' => 'User private'], 400);
         }
-        
+
         $userPostParticipations = UserPostParticipation::where(['participant_id' => $user->id, 'is_completed' => true])->get();
         $userActions = [];
 
@@ -328,10 +320,8 @@ class UserPostParticipationController extends Controller
                 foreach ($post->userPostParticipation as $userPostParticipation) {
                     $userPostParticipation->users;
                 }
-                $post->category;
-                $post->like;
-                $post->comment->load('users');
-                $post->user->badge;
+                $post = $this->postService->loadPostData($post);
+
                 $userActions[] = $post;
             }
         }

@@ -7,7 +7,15 @@ use App\Models\User;
 
 class UserService
 {
-    public static function searchByUsernameOrEmail(string $q)
+    public function getUser() : User
+    {
+      $user = auth()->user();
+      $user = User::where('id', $user->id)->firstOrFail();
+  
+      return $user;
+    }
+
+    public function searchByUsernameOrEmail(string $q)
     {
         // Participant lists with details
         $users = User::where('username', 'ILIKE', '%' . $q . '%')
@@ -23,7 +31,7 @@ class UserService
         return $users;
     }
 
-    public static function checkIfCanAccessToRessource($authorId): bool
+    public function checkIfCanAccessToRessource($authorId): bool
     {
         $author = User::where("id", $authorId)->firstOrFail();
         $userAuthenticated = auth()->user();

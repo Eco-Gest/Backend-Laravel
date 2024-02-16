@@ -7,18 +7,23 @@ use App\Models\Comment;
 use Illuminate\Http\Request;
 use App\Models\Post;
 use App\Notifications\PostCommented;
+use App\Services\UserService;
 
 class CommentController extends Controller
 {
+
+    protected UserService $userService;
+    public function __construct(UserService $userService)
+    {
+      $this->userService = $userService;
+    }
+
     /**
      * Comment a post.
      */
     public function store(Request $request, int $postId)
     {
-        $user = auth()->user();
-        if (!$user) {
-            return response()->json(['error' => 'User not found.'], 404);
-        }
+        $user = $this->userService->getUser();
         $post = Post::where('id', $postId)->first();
         if (!$post) {
             return response()->json(['error' => 'Post not found.'], 404);

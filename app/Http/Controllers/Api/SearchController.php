@@ -11,16 +11,24 @@ use App\Models\User;
 
 class SearchController extends Controller
 {
-    public function getResult(String $q)
+    protected PostService $postService;
+    protected UserService $userService;
+
+    public function __construct(PostService $postService, UserService $userService)
+    {
+        $this->postService = $postService;
+        $this->userService = $userService;
+    }
+    public function getResult(string $q)
     {
         // Participants list with details
-        $users = UserService::searchByUsernameOrEmail($q);
+        $users = $this->userServicesearchByUsernameOrEmail($q);
         $result['users'] = $users;
 
         // Posts list with details
-        $posts = PostService::searchByTitleOrDescriptionOrTag($q);
+        $posts = $this->postService->searchByTitleOrDescriptionOrTag($q);
         $result['posts'] = $posts;
-        
+
         return response()->json($result);
     }
 }

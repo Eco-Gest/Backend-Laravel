@@ -54,6 +54,7 @@ services:
   
   adminer:
     image: 'adminer:4.8.1'
+    restart: unless-stopped
     depends_on:
       - db
     ports:

@@ -8,9 +8,15 @@ use App\Models\Subscription;
 use App\Models\User;
 use App\Models\UserTrophy;
 use Illuminate\Http\Request;
+use App\Services\UserService;
 
 class UserTrophyController extends Controller
 {
+    protected UserService $userService;
+    public function __construct(UserService $userService)
+    {
+        $this->userService = $userService;
+    }
 
     /**
      * Recover all trophies of a user.
@@ -19,17 +25,17 @@ class UserTrophyController extends Controller
     {
         $user = User::where('id', $userId)->firstOrFail();
         $userAuthenticated = auth()->user();
-        
+
         if (!$userAuthenticated || !$user) {
             return response()->json(['error' => 'User not found.'], 404);
         }
         if ($user->is_private) {
-            $userAuthenticatedFollowing =  Subscription::where(['status' => 'approved', 'following_id' => $user->id, 'follower_id' => $userAuthenticated->id]);
-            if ($userAuthenticatedFollowing->count() < 1  && $userId != $userAuthenticated->id) {
+            $userAuthenticatedFollowing = Subscription::where(['status' => 'approved', 'following_id' => $user->id, 'follower_id' => $userAuthenticated->id]);
+            if ($userAuthenticatedFollowing->count() < 1 && $userId != $userAuthenticated->id) {
                 return response()->json(['error' => 'User private'], 400);
             }
         }
-        
+
         $userTrophies = UserTrophy::where('user_id', $user->id)->get();
 
         if (!$userTrophies) {
@@ -47,10 +53,7 @@ class UserTrophyController extends Controller
      */
     public function store(Request $request)
     {
-        $user = auth()->user();
-        if (!$user) {
-            return response()->json(['error' => 'User not found.'], 404);
-        }
+        $user = $this->userService->getUser();
 
         $validated = $request->validate([
             'category_id' => 'required',
@@ -77,13 +80,13 @@ class UserTrophyController extends Controller
     {
         $user = User::where('id', $userId)->firstOrFail();
         $userAuthenticated = auth()->user();
-        
+
         if (!$userAuthenticated || !$user) {
             return response()->json(['error' => 'User not found.'], 404);
         }
         if ($user->is_private) {
-            $userAuthenticatedFollowing =  Subscription::where(['status' => 'approved', 'following_id' => $user->id, 'follower_id' => $userAuthenticated->id]);
-            if ($userAuthenticatedFollowing->count() < 1  && $userId != $userAuthenticated->id) {
+            $userAuthenticatedFollowing = Subscription::where(['status' => 'approved', 'following_id' => $user->id, 'follower_id' => $userAuthenticated->id]);
+            if ($userAuthenticatedFollowing->count() < 1 && $userId != $userAuthenticated->id) {
                 return response()->json(['error' => 'User private'], 400);
             }
         }

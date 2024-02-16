@@ -6,18 +6,22 @@ use App\Http\Controllers\Controller;
 use App\Models\Like;
 use App\Models\Post;
 use App\Notifications\PostLiked;
+use App\Services\UserService;
 
 class LikeController extends Controller
 {
+    protected UserService $userService;
+    public function __construct(UserService $userService)
+    {
+      $this->userService = $userService;
+    }
+
     /**
      * Like a post.
      */
     public function likePost(int $postId)  
     {
-        $user = auth()->user();
-        if (!$user) {
-            return response()->json(['error' => 'User not found.'], 404);
-        }
+        $user = $this->userService->getUser();
 
         $post = Post::where('id', $postId)->first();
         if (!$post) {
@@ -48,10 +52,7 @@ class LikeController extends Controller
 
     public function unlikePost(int $postId)
     {
-        $user = auth()->user();
-        if (!$user) {
-            return response()->json(['error' => 'User not found.'], 404);
-        }
+        $user = $this->userService->getUser();
 
         $post = Post::where('id', $postId)->first();
         if (!$post) {

@@ -8,9 +8,16 @@ use App\Models\UserPointCategory;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
+use App\Services\UserService;
 
 class UserPointCategoryController extends Controller
 {
+
+    protected UserService $userService;
+    public function __construct(UserService $userService)
+    {
+      $this->userService = $userService;
+    }
 
     /**
      * Display a listing of the resource.
@@ -46,10 +53,7 @@ class UserPointCategoryController extends Controller
      */
     public function store(Request $request)
     {
-        $user = auth()->user();
-        if (!$user) {
-            return response()->json(['error' => 'User not found.'], 404);
-        }
+        $user = $this->userService->getUser();
 
         $validated = $request->validate([
             'category_id' => 'required',

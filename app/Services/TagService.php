@@ -11,7 +11,7 @@ use DateTime;
 
 class TagService
 {
-    public static function addTagsToPost(array $tags)
+    public function addTagsToPost(array $tags)
     {
         $allTags = Tag::get();
         $tagsToAttach = [];
@@ -29,10 +29,10 @@ class TagService
         return $tagsToAttach;
     }
 
-    public static function updateTagsToPost(Post $post, array $updatedTags)
+    public function updateTagsToPost(Post $post, array $updatedTags)
     {
         $oldTags = []; //
-        $newTags = self::addTagsToPost($updatedTags); // 1, 3, 8
+        $newTags = $this->addTagsToPost($updatedTags); // 1, 3, 8
         $tagsToDetach = [];
         $tagsToAttach = [];
 
@@ -57,13 +57,5 @@ class TagService
         $postUpdated = $post;
 
         return $postUpdated;
-    }
-
-    public static function getTagsByPost(Post $post)
-    {
-        $tags = $post->tags;
-        if ($tags != null) {
-            return $tags;
-        }
     }
 }

@@ -2,10 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Models\Reward;
-use App\Models\Subscription;
 use App\Models\User;
-use App\Services\ErrorHandlerService;
 use App\Services\PostService;
 use App\Services\TagService;
 use App\Models\Category;
@@ -14,11 +11,23 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\Post;
 use App\Models\UserPointCategory;
-use App\Models\UserTrophy;
 use App\Services\UserService;
 
 class PostController extends Controller
 {
+
+    protected UserPointService $userPointService;
+    protected TagService $tagService;
+
+    protected PostService $postService;
+    protected UserService $userService;
+    public function __construct(UserPointService $userPointService, TagService $tagService, PostService $postService, UserService $userService)
+    {
+        $this->userPointService = $userPointService;
+        $this->tagService = $tagService;
+        $this->postService = $postService;
+        $this->userService = $userService;
+    }
 
     /**
      * Display a listing of the resource.
@@ -30,19 +39,11 @@ class PostController extends Controller
         $postsOfUserCommunity = [];
 
         foreach ($posts as $post) {
-            if (UserService::checkIfCanAccessToRessource($post->author_id)) {
+            if ($this->userService->checkIfCanAccessToRessource($post->author_id)) {
                 foreach ($post->userPostParticipation as $userPostParticipation) {
                     $userPostParticipation->users;
                 }
-                $post->category;
-                $post->tags->setHidden([
-                    "created_at",
-                    "updated_at",
-                    "pivot"
-                ]);
-                $post->like;
-                $post->comment->load('users');
-                $post->user->badge;
+                $post = $this->postService->loadPostData($post);
                 $postsOfUserCommunity[] = $post;
             }
         }
@@ -55,10 +56,7 @@ class PostController extends Controller
      */
     public function store(Request $request)
     {
-        $user = auth()->user();
-        if (!$user) {
-            return response()->json(['error' => 'User not found.'], 404);
-        }
+        $user = $this->userService->getUser();
 
         $validated = $request->validate([
             'category_id' => 'required|integer',
@@ -84,23 +82,27 @@ class PostController extends Controller
             }
         }
 
+        if ($request->hasFile('image')) {
+            $path = $request->file('image')->store('images');
+            $validated['image'] = $path;
+        }
+
         $validated['author_id'] = $user->id;
         $validated['category_id'] = $category->id;
 
         $post = Post::create($validated);
-        PostService::addAuthorPostToUserPostParticipation($post);
+        $this->postService->addAuthorPostToUserPostParticipation($post);
 
-        $userPointCategory = UserPointCategory::where('user_id', $user->id)->where('category_id', $category->id)->first();
-        UserPointService::updateUserCurrentPointCategory($post, $userPointCategory);
+        $userPointCategory = UserPointCategory::where(['user_id' => $user->id, 'category_id' => $category->id])->first();
+        $this->userPointService->updateUserCurrentPointCategory($post, $userPointCategory);
 
-        $userModel = User::where('id', $user->id)->firstOrFail();
-        UserPointService::setNewBadge($userModel);
+        $this->userPointService->setNewBadge($user);
 
         $post->save();
 
         // If user adds tags
         if (isset($validated['tags'])) {
-            $tagsToAttach = TagService::addTagsToPost($validated['tags']);
+            $tagsToAttach = $this->tagService->addTagsToPost($validated['tags']);
             foreach ($tagsToAttach as $tagId) {
                 $post->tags()->attach($tagId);
             }
@@ -117,10 +119,10 @@ class PostController extends Controller
     {
         $post = Post::where('id', $id)->firstOrFail();
         $user = User::where('id', $post->author_id)->firstOrFail();
-        if (!UserService::checkIfCanAccessToRessource($user->id)) {
+        if (!$this->userService->checkIfCanAccessToRessource($user->id)) {
             return response()->json(['error' => 'User private'], 400);
         }
-        
+
         if (!$post) {
             return response()->json(['error' => 'Post not found.'], 404);
         }
@@ -128,16 +130,7 @@ class PostController extends Controller
         foreach ($post->userPostParticipation as $userPostParticipation) {
             $userPostParticipation->users;
         }
-        $post->category;
-        $post->like;
-        $post->tags->setHidden([
-            "created_at",
-            "updated_at",
-            "pivot"
-        ]);
-        $post->comment;
-        $post->comment->load('users');
-        $post->user->badge;
+        $post = $this->postService->loadPostData($post);
 
         return response()->json($post);
     }
@@ -147,14 +140,7 @@ class PostController extends Controller
      */
     public function update(Request $request, int $id)
     {
-        $user = auth()->user();
-
-
-        if ($user === null) {
-            return response()->json([
-                'message' => 'User not found.'
-            ], 404);
-        }
+        $user = $this->userService->getUser();
 
         $post = Post::where('id', $id)->firstOrFail();
 
@@ -177,8 +163,15 @@ class PostController extends Controller
             }
         }
 
-        if ($validated['tags']) {
-            $post = TagService::updateTagsToPost($post, $validated['tags']);
+        $category = Category::where('id', $validated['category_id'])->firstOrFail();
+
+        $userPointCategory = UserPointCategory::where(['user_id' => $user->id, 'category_id' => $category->id])->first();
+        $this->userPointService->updateUserCurrentPointCategoryPostUpdated($post, $validated, $userPointCategory);
+
+        $this->userPointService->setNewBadge($user);
+
+        if (isset($validated['tags'])) {
+            $post = $this->tagService->updateTagsToPost($post, $validated['tags']);
         }
         $post->update($validated);
 
@@ -196,30 +189,15 @@ class PostController extends Controller
 
     public function getPostsByTag(string $tag)
     {
-        $user = auth()->user();
+        $this->userService->getUser();
 
-        if ($user === null) {
-            return response()->json([
-                'message' => 'User not found.'
-            ], 404);
-        }
-
-        $posts = PostService::getPostsByTag($tag);
+        $posts = $this->postService->getPostsByTag($tag);
 
         foreach ($posts as $post) {
-            $post->category;
-            $post->like;
-            $post->setHidden(["pivot"]);
-            $post->tags->setHidden([
-                "created_at",
-                "updated_at",
-                "pivot"
-            ]);
-            $post->comment;
-            $post->user;
+            $post = $this->postService->loadPostData($post);
         }
 
-        if ($posts === null) {
+        if ($posts == null) {
             return response()->json(['error' => 'Tag not found.'], 404);
         }
         return response()->json($posts);
