@@ -30,7 +30,7 @@ class RegisterController extends Controller
         if (User::where('email', $request['email'])->count() > 0) {
             return response()->json([
                 'message' => 'Email already used.'
-            ], 400);
+            ], 409);
         }
 
         $validatorUsername = Validator::make($request->all(), [
@@ -46,7 +46,7 @@ class RegisterController extends Controller
         if (User::where('username', $request['username'])->count() > 0) {
             return response()->json([
                 'message' => 'Username already used.'
-            ], 400);
+            ], 409);
         }
 
         $validatorPassword = Validator::make($request->all(), [
