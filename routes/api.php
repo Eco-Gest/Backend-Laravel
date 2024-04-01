@@ -1,7 +1,6 @@
 <?php
 
-use App\Http\Controllers\Api\LoginController;
-use App\Http\Controllers\Api\RegisterController;
+use App\Http\Controllers\Api\AuthenticationController;
 use App\Http\Controllers\Api\PostController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\SearchController;
@@ -39,11 +38,13 @@ Route::get('/test', fn() => json_encode(["test", "test"]));
 /**
  * @unauthenticated
  */
-Route::post('/login', [LoginController::class, 'login']);
+Route::post('/login', [AuthenticationController::class, 'login']);
 /**
  * @unauthenticated
  */
-Route::post('/register', [RegisterController::class, 'register']);
+Route::post('/register', [AuthenticationController::class, 'register']);
+
+Route::post('reset-password', [AuthenticationController::class, 'resetPassword']);
 
 Route::get('image/{path}', [ImageController::class, 'getImage'])->where('path', '.*');
 
