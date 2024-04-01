@@ -3,9 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Category;
 use App\Models\User;
-use App\Models\UserPointCategory;
 use App\Services\UserPointService;
 use App\Services\UserService;
 use Illuminate\Http\Request;
@@ -61,7 +59,6 @@ class UserController extends Controller
     $validated = $request->validate([
       'email' => 'nullable|string|email',
       'username' => 'nullable|string|max:255',
-      'image' => 'nullable|string|max:255',
       'badge_id' => 'nullable|integer',
       'birthdate' => 'nullable|date',
       'biography' => 'nullable|string',
@@ -70,8 +67,8 @@ class UserController extends Controller
     ]);
 
     $user->update($validated);
-
     return response()->json($user);
+
   }
 
   public function destroy()
