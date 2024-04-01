@@ -13,13 +13,23 @@ use Illuminate\Notifications\Notification;
 class PostCommented extends Notification
 {
     use Queueable;
+    public $message;
+    public User $user;
 
-    public $comment;
+    public Post $post;
+
+    public Comment $comment;
+
+
     /**
-     * Create a new notification instance.
+     * Create a new event instance.
+     *
+     * @return void
      */
-    public function __construct(Comment $comment)
+    public function __construct(User $user, Post $post, Comment $comment)
     {
+        $this->user = $user;
+        $this->post = $post;
         $this->comment = $comment;
     }
 
@@ -30,7 +40,7 @@ class PostCommented extends Notification
      */
     public function via(object $notifiable): array
     {
-        return ['database', 'broadcast'];
+        return ['database'];
     }
 
     /**
@@ -54,12 +64,5 @@ class PostCommented extends Notification
         return [
             'comment_id' => $this->comment->id,
         ];
-    }
-
-    public function toBroadcast($notifiable)
-    {
-        return new BroadcastMessage([
-            'comment_id' => $this->comment->id,
-        ]);
     }
 }

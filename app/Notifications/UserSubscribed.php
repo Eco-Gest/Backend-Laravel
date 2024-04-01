@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Models\User;
 use App\Models\Subscription;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -14,11 +15,14 @@ class UserSubscribed extends Notification
 
     public $subscription;
 
+    public User $user;
+
     /**
      * Create a new notification instance.
      */
-    public function __construct(Subscription $subscription)
+    public function __construct(Subscription $subscription, User $user)
     {
+        $this->user = $user;
         $this->subscription = $subscription;
     }
 
@@ -29,7 +33,7 @@ class UserSubscribed extends Notification
      */
     public function via(object $notifiable): array
     {
-        return ['database', 'broadcast'];
+        return ['database'];
     }
 
     /**

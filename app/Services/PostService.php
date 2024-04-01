@@ -81,7 +81,7 @@ class PostService
 
     }
 
-    public function loadPostData (Post $post) 
+    public function loadPostData(Post $post)
     {
         $post->category;
         $post->tags->setHidden([

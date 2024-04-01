@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Events\CommentEvent;
 use App\Http\Controllers\Controller;
 use App\Models\Comment;
 use Illuminate\Http\Request;
@@ -15,7 +16,7 @@ class CommentController extends Controller
     protected UserService $userService;
     public function __construct(UserService $userService)
     {
-      $this->userService = $userService;
+        $this->userService = $userService;
     }
 
     /**
@@ -40,7 +41,11 @@ class CommentController extends Controller
         ]);
 
         $comment->save();
-        $post->user->notify(new PostCommented($comment));
+
+        if ($post->author_id != $user->id) {
+            $post->user->notify(new PostCommented($user, $post, $comment));
+            event(new CommentEvent($user, $post, $comment));
+        }
 
         return response()->json($comment);
     }
@@ -51,7 +56,6 @@ class CommentController extends Controller
     public function update(Request $request, int $id)
     {
         $user = auth()->user();
-
 
         if ($user === null) {
             return response()->json([

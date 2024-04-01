@@ -63,7 +63,6 @@ class PostController extends Controller
             "tags" => "nullable|array",
             'title' => 'nullable|string|max:255',
             'description' => 'nullable|string',
-            'image' => 'nullable|string|max:255',
             'position' => 'nullable|string|max:255',
             'type' => 'required|string|max:255',
             'level' => 'required|string|max:255',
@@ -108,7 +107,7 @@ class PostController extends Controller
             }
         }
 
-        return response()->json($validated);
+        return response()->json($post);
     }
 
 
