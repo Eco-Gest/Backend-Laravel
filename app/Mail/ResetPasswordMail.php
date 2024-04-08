@@ -9,21 +9,21 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class ReportMail extends Mailable
+class ResetPasswordMail extends Mailable
 {
     /**
-     * Elements de report
+     * data
      * @var array
      */
-    public $report;
+    public $data;
 
-    public function __construct($report)
+    public function __construct($data)
     {
-        $this->report = $report;
+        $this->data = $data;
     }
 
     public function build()
     {
-        return $this->from(env('MAIL_FROM_ADDRESS'))->view('emails.report')->with(['report' => $this->report])->subject('Ecogest : vous avez un nouveau signalement');
+        return $this->from(env('MAIL_FROM_ADDRESS'))->view('emails.resetPassword')->with(['data' => $this->data])->subject('Ecogest mot de passe oublié ?');
     }
 }

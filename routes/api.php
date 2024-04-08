@@ -45,6 +45,8 @@ Route::post('/login', [AuthenticationController::class, 'login']);
 Route::post('/register', [AuthenticationController::class, 'register']);
 
 Route::post('reset-password', [AuthenticationController::class, 'resetPassword']);
+Route::post('mail-reset-password', [AuthenticationController::class, 'sendMailResetPassword']);
+
 
 Route::get('image/{path}', [ImageController::class, 'getImage'])->where('path', '.*');
 

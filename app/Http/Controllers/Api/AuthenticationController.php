@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Password;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Support\Str;
 use App\Services\UserService;
+use Illuminate\Support\Facades\Mail; 
 
 class AuthenticationController extends Controller
 {
@@ -113,7 +114,6 @@ class AuthenticationController extends Controller
       ], 400);
     }
 
-
     $user = $this->userService->getUser();
 
     $validatorPassword = Validator::make($request->all(), [
@@ -139,6 +139,23 @@ class AuthenticationController extends Controller
       'access_token' => $token,
       'token_type' => 'Bearer',
     ]);
+  }
+
+  public function sendMailResetPassword(Request $request) {
+    $validatedData = $request->validate([
+      'email' => 'required|email'
+    ]);
+
+    $user = User::where('email', $validatedData['email'])->firstOrFail();
+
+    $data = [
+      'email' => $validatedData['email'], 
+      'token' => $user->createToken('authToken')->plainTextToken
+    ];
+
+    Mail::to($data['email'])->send(new \App\Mail\ResetPasswordMail($data));
+    
+    return response()->json(['message' => 'Email sent to reset password']);
   }
 
 }
