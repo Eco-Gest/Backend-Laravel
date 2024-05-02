@@ -213,7 +213,7 @@
     <div class="dark-box"></div>
     <div class="content">
         <h1 id="introduction">Introduction</h1>
-<p>EcO'Gest</p>
+<p>Ecogest</p>
 <aside>
     <strong>Base URL</strong>: <code>http://localhost</code>
 </aside>

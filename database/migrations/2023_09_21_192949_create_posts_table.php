@@ -5,23 +5,19 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
     public function up(): void
     {
         Schema::create('posts', function (Blueprint $table) {
-            $table->id();     
+            $table->id();
             $table->foreignId('category_id')->constrained(
                 table: 'categories',
                 indexName: 'id'
-            )->cascadeOnDelete();
-            $table->foreignId('author_id')->constrained(
-                table: 'users',
-                indexName: 'post_user_id'
-            )->cascadeOnDelete();
+            );
+            $table->foreignId('author_id')->nullable()->constrained("users")->cascadeOnUpdate()->nullOnDelete();
             $table->string('title')->nullable();
             $table->text('description')->nullable();
             $table->string('image')->nullable();

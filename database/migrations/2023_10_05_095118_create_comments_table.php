@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
@@ -17,10 +16,7 @@ return new class extends Migration
                 table: 'posts',
                 indexName: 'id'
             )->cascadeOnDelete();
-            $table->foreignId('author_id')->constrained(
-                table: 'users',
-                indexName: 'author_id'
-            )->cascadeOnDelete();
+            $table->foreignId('author_id')->nullable()->constrained("users")->cascadeOnUpdate()->nullOnDelete();
             $table->text('content');
             $table->timestamps();
         });

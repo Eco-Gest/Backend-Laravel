@@ -1,6 +1,6 @@
 # Introduction
 
-EcO'Gest
+Ecogest
 
 <aside>
     <strong>Base URL</strong>: <code>http://localhost</code>
