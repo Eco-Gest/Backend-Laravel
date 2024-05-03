@@ -131,4 +131,12 @@ class SubscriptionController extends Controller
         $subscription->delete();
         return response()->json('Subscription request declined');
     }
+    public function removeFollower(int $userId)
+    {
+        $userAuthenticated = $this->userService->getUser();
+
+        $subscription = Subscription::where(['following_id' => $userAuthenticated->id, 'follower_id' => $userId, 'status' => 'approved'])->firstOrFail();
+        $subscription->delete();
+        return response()->json('Followed removed');
+    }
 }
