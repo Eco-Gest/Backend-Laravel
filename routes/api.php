@@ -44,9 +44,8 @@ Route::post('/login', [AuthenticationController::class, 'login']);
  */
 Route::post('/register', [AuthenticationController::class, 'register']);
 
+Route::post('request-reset-password', [AuthenticationController::class, 'requestResetPassword']);
 Route::post('reset-password', [AuthenticationController::class, 'resetPassword']);
-Route::post('mail-reset-password', [AuthenticationController::class, 'sendMailResetPassword']);
-
 
 Route::get('image/{path}', [ImageController::class, 'getImage'])->where('path', '.*');
 
@@ -56,6 +55,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', [UserController::class, 'getUserData']);
     Route::patch('/me', [UserController::class, 'update']);
     Route::delete('/me', [UserController::class, 'destroy']);
+
+    Route::post('change-password', [AuthenticationController::class, 'resetPassword']);
 
     // images
     Route::post('/users/{userId}/uploadImage', [ImageController::class, 'uploadImageUser']);
