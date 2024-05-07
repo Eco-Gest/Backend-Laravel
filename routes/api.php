@@ -101,6 +101,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Report
     Route::post('/submit-report', [ReportController::class, 'submitReport']); 
 
+    Route::delete('remove-follower/{userId}', [SubscriptionController::class, 'removeFollower']);
 
     // API business routes
     Route::apiResources([
