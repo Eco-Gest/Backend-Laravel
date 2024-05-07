@@ -2,22 +2,29 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Events\SubscriptionEvent;
 use App\Http\Controllers\Controller;
 use App\Models\Post;
 use App\Models\User;
 use App\Notifications\UserSubscribed;
 use Illuminate\Http\Request;
+use App\Services\UserService;
 
 use App\Models\Subscription;
 
 class SubscriptionController extends Controller
 {
+    protected UserService $userService;
+    public function __construct(UserService $userService)
+    {
+        $this->userService = $userService;
+    }
     /**
      * subscribe to a user
      */
     public function subscribe(int $userId)
     {
-        $userAuthenticated = auth()->user();
+        $userAuthenticated = $this->userService->getUser();
         if (!$userAuthenticated) {
             return response()->json(['error' => 'User not found.'], 404);
         }
@@ -41,7 +48,8 @@ class SubscriptionController extends Controller
             'status' => 'pending',
         ]);
         $user = User::where('id', $userId)->first();
-        $user->notify(new UserSubscribed($subscription));
+        $user->notify(new UserSubscribed($subscription, $userAuthenticated));
+        event(new SubscriptionEvent($subscription));
 
         $subscription->save();
         return response()->json($subscription);
@@ -54,7 +62,8 @@ class SubscriptionController extends Controller
 
     public function unSubscribe(int $userId)
     {
-        $userAuthenticated = auth()->user();
+        $userAuthenticated = $this->userService->getUser();
+
         if (!$userAuthenticated) {
             return response()->json(['error' => 'User not found.'], 404);
         }
@@ -74,7 +83,8 @@ class SubscriptionController extends Controller
 
     public function acceptSubscriptionRequest(int $userId)
     {
-        $userAuthenticated = auth()->user();
+        $userAuthenticated = $this->userService->getUser();
+
         if (!$userAuthenticated) {
             return response()->json(['error' => 'User not found.'], 404);
         }
@@ -85,10 +95,13 @@ class SubscriptionController extends Controller
         }
 
         $user = User::where('id', $userAuthenticated->id)->first();
-        $user->notify(new UserSubscribed($subscription));
 
         $subscription->status = 'approved';
         $subscription->save();
+
+        $userAuthenticated->notify(new UserSubscribed($subscription, $userAuthenticated));
+        event(new SubscriptionEvent($subscription));
+
         return response()->json($subscription);
     }
 
@@ -98,7 +111,8 @@ class SubscriptionController extends Controller
 
     public function cancelSubscriptionRequest(int $userId)
     {
-        $userAuthenticated = auth()->user();
+        $userAuthenticated = $this->userService->getUser();
+
         if (!$userAuthenticated) {
             return response()->json(['error' => 'User not found.'], 404);
         }
@@ -119,7 +133,8 @@ class SubscriptionController extends Controller
 
     public function declineSubscriptionRequest(int $userId)
     {
-        $userAuthenticated = auth()->user();
+        $userAuthenticated = $this->userService->getUser();
+
         if (!$userAuthenticated) {
             return response()->json(['error' => 'User not found.'], 404);
         }
