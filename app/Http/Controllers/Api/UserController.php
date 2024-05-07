@@ -25,8 +25,8 @@ class UserController extends Controller
     $user->badge;
     $user->userTrophy;
     $user->userPostParticipation;
-    $user->follower;
-    $user->following;
+    $user->follower->load('follower');
+    $user->following->load('following');
     $user->total_point = $this->userPointService->userTotalPoints($user->id);
 
     return response()->json($user);
@@ -34,8 +34,8 @@ class UserController extends Controller
 
   public function show(int $userId)
   {
-    $user = $this->userService->getUser();
-
+    $user = User::findOrFail($userId);
+    
     $user->badge;
     $user->total_point = $this->userPointService->userTotalPoints($user->id);
 
@@ -45,8 +45,8 @@ class UserController extends Controller
     } else {
       $user->userTrophy;
       $user->userPostParticipation;
-      $user->follower;
-      $user->following;
+      $user->follower->load('follower');
+      $user->following->load('following');
     }
 
     return response()->json($user);
