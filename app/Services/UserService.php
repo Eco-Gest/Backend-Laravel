@@ -33,6 +33,7 @@ class UserService
 
     public function checkIfCanAccessToRessource($authorId): bool
     {
+        if($authorId == null) return true;
         $author = User::where("id", $authorId)->firstOrFail();
         $userAuthenticated = auth()->user();
 

@@ -91,7 +91,7 @@ class PostService
         ]);
         $post->like;
         $post->comment->load('users');
-        $post->user->badge;
+        $post->user->badge ?? null;
         return $post;
     }
 }

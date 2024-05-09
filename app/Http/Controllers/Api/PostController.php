@@ -117,8 +117,7 @@ class PostController extends Controller
     public function show(int $id)
     {
         $post = Post::where('id', $id)->firstOrFail();
-        $user = User::where('id', $post->author_id)->firstOrFail();
-        if (!$this->userService->checkIfCanAccessToRessource($user->id)) {
+        if (!$this->userService->checkIfCanAccessToRessource($post->author_id)) {
             return response()->json(['error' => 'User private'], 400);
         }
 
