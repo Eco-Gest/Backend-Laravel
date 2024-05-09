@@ -50,3 +50,6 @@ ou
 
  `composer test`
 
+# Outil de test pour les mails 
+url : https://mailtrap.io/home
+
