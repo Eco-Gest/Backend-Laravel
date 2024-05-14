@@ -22,7 +22,7 @@ class SearchController extends Controller
     public function getResult(string $q)
     {
         // Participants list with details
-        $users = $this->userServicesearchByUsernameOrEmail($q);
+        $users = $this->userService->searchByUsernameOrEmail($q);
         $result['users'] = $users;
 
         // Posts list with details
