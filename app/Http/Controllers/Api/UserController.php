@@ -74,7 +74,7 @@ class UserController extends Controller
   public function destroy()
   {
     $user = $this->userService->getUser();
-
+    $user->deleteUserActionsPosts($user->id);
     $user->delete();
   }
 
