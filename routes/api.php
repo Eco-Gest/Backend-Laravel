@@ -56,7 +56,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::patch('/me', [UserController::class, 'update']);
     Route::delete('/me', [UserController::class, 'destroy']);
 
-    Route::post('change-password', [AuthenticationController::class, 'resetPassword']);
+    Route::post('change-password', [AuthenticationController::class, 'changePassword']);
 
     // images
     Route::post('/users/{userId}/uploadImage', [ImageController::class, 'uploadImageUser']);
