@@ -42,6 +42,8 @@ class UserController extends Controller
     if (!$this->userService->checkIfCanAccessToRessource($user->id)) {
       $user->userTrophy = [];
       $user->userPostParticipation = [];
+      $user->follower = [];
+      $user->following = [];
     } else {
       $user->userTrophy;
       $user->userPostParticipation;
@@ -74,7 +76,7 @@ class UserController extends Controller
   public function destroy()
   {
     $user = $this->userService->getUser();
-
+    $user->deleteUserActionsPosts($user->id);
     $user->delete();
   }
 

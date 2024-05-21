@@ -99,4 +99,12 @@ class User extends Authenticatable
     {
         return $this->hasMany(UserPostParticipation::class, 'participant_id');
     }
+
+    public function deleteUserActionsPosts($userId)
+    {
+        $posts = Post::where(['type' => 'action', 'author_id' => $userId]);
+        if ($posts->count() > 0) {
+            $posts->delete();
+        }
+    }
 }
