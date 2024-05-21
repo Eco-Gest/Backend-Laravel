@@ -7,7 +7,7 @@ use App\Models\Comment;
 use App\Models\Like;
 use App\Models\Reward;
 use App\Models\Post;
-use App\Models\Subscription;
+use App\Models\UsersRelation;
 use App\Models\UserPointCategory;
 use App\Models\UserPostParticipation;
 use App\Models\UserTrophy;
@@ -78,12 +78,12 @@ class User extends Authenticatable
 
     public function following()
     {
-        return $this->hasMany(Subscription::class, 'follower_id');
+        return $this->hasMany(UsersRelation::class, 'follower_id');
     }
 
     public function follower()
     {
-        return $this->hasMany(Subscription::class, 'following_id');
+        return $this->hasMany(UsersRelation::class, 'following_id');
     }
 
     public function like()

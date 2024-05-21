@@ -3,7 +3,7 @@
 namespace App\Notifications;
 
 use App\Models\User;
-use App\Models\Subscription;
+use App\Models\UsersRelation;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -20,7 +20,7 @@ class UserSubscribed extends Notification
     /**
      * Create a new notification instance.
      */
-    public function __construct(Subscription $subscription, User $user)
+    public function __construct(UsersRelation $subscription, User $user)
     {
         $this->user = $user;
         $this->subscription = $subscription;

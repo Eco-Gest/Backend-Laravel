@@ -6,12 +6,12 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Subscription extends Model
+class UsersRelation extends Model
 {
     use HasFactory;
 
     
-    protected $table = 'subscriptions';
+    protected $table = 'users_relation';
 
     protected $fillable = [
         'id',

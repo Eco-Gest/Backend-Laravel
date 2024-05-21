@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Models\Reward;
-use App\Models\Subscription;
+use App\Models\UsersRelation;
 use App\Models\UserPostParticipation;
 use App\Services\PostService;
 use App\Services\UserPointService;
@@ -95,8 +95,8 @@ class UserPostParticipationController extends Controller
         $userPostParticipation = UserPostParticipation::where('id', $id)->firstOrFail();
 
         $user = User::where('id', $userPostParticipation->participant_id)->first();
-        if (!$this->userService->checkIfCanAccessToRessource($user->id)) {
-            return response()->json(['error' => 'User private'], 400);
+        if (!$this->userService->checkIfCanAccessToRessource($user->id) || !$this->userService->isUserUnblocked($user->id)) {
+            return response()->json(['error' => 'Access denied'], 403);
         }
 
         if (!$userPostParticipation) {
@@ -168,8 +168,8 @@ class UserPostParticipationController extends Controller
         if (!$userAuthenticated || !$user) {
             return response()->json(['error' => 'User not found.'], 404);
         }
-        if (!$this->userService->checkIfCanAccessToRessource($userId)) {
-            return response()->json(['error' => 'User private'], 400);
+        if (!$this->userService->checkIfCanAccessToRessource($userId) || !$this->userService->isUserUnblocked($user->id)) {
+            return response()->json(['error' => 'Access denied'], 403);
         }
 
         $userPostParticipations = UserPostParticipation::where('participant_id', $user->id)->get();
@@ -183,8 +183,8 @@ class UserPostParticipationController extends Controller
     public function getPostsByUserCompleted(int $userId)
     {
         $user = User::where('id', $userId)->firstOrFail();
-        if (!$this->userService->checkIfCanAccessToRessource($userId)) {
-            return response()->json(['error' => 'User private'], 400);
+        if (!$this->userService->checkIfCanAccessToRessource($userId) || !$this->userService->isUserUnblocked($user->id)) {
+            return response()->json(['error' => 'Access denied'], 403);
         }
 
         $userPostParticipations = UserPostParticipation::where(['participant_id' => $user->id, 'is_completed' => true])->get();
@@ -211,8 +211,8 @@ class UserPostParticipationController extends Controller
     public function getPostsByUserAbandoned(int $userId)
     {
         $user = User::where('id', $userId)->firstOrFail();
-        if (!$this->userService->checkIfCanAccessToRessource($userId)) {
-            return response()->json(['error' => 'User private'], 400);
+        if (!$this->userService->checkIfCanAccessToRessource($userId) || !$this->userService->isUserUnblocked($user->id)) {
+            return response()->json(['error' => 'Access denied'], 403);
         }
 
         $userPostParticipations = UserPostParticipation::where(['participant_id' => $user->id, 'is_completed' => false])->get();
@@ -243,8 +243,8 @@ class UserPostParticipationController extends Controller
     {
         $user = User::where('id', $userId)->firstOrFail();
         $user = User::where('id', $userId)->firstOrFail();
-        if (!$this->userService->checkIfCanAccessToRessource($userId)) {
-            return response()->json(['error' => 'User private'], 400);
+        if (!$this->userService->checkIfCanAccessToRessource($userId) || !$this->userService->isUserUnblocked($user->id)) {
+            return response()->json(['error' => 'Access denied'], 403);
         }
 
         $userPostParticipations = UserPostParticipation::where(['participant_id' => $user->id, 'is_completed' => false])->get();
@@ -276,8 +276,8 @@ class UserPostParticipationController extends Controller
     public function getPostsByUserNext(int $userId)
     {
         $user = User::where('id', $userId)->firstOrFail();
-        if (!$this->userService->checkIfCanAccessToRessource($userId)) {
-            return response()->json(['error' => 'User private'], 400);
+        if (!$this->userService->checkIfCanAccessToRessource($userId) || !$this->userService->isUserUnblocked($user->id)) {
+            return response()->json(['error' => 'Access denied'], 403);
         }
 
         $userPostParticipations = UserPostParticipation::where(['participant_id' => $user->id, 'is_completed' => false])->get();
@@ -307,8 +307,8 @@ class UserPostParticipationController extends Controller
     public function getUserActions(int $userId)
     {
         $user = User::where('id', $userId)->firstOrFail();
-        if (!$this->userService->checkIfCanAccessToRessource($userId)) {
-            return response()->json(['error' => 'User private'], 400);
+        if (!$this->userService->checkIfCanAccessToRessource($userId) || !$this->userService->isUserUnblocked($user->id)) {
+            return response()->json(['error' => 'Access denied'], 403);
         }
 
         $userPostParticipations = UserPostParticipation::where(['participant_id' => $user->id, 'is_completed' => true])->get();

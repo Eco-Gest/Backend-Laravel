@@ -11,7 +11,7 @@ use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\UserPointCategoryController;
 use App\Http\Controllers\Api\UserPostParticipationController;
 use App\Http\Controllers\Api\UserTrophyController;
-use App\Http\Controllers\Api\SubscriptionController;
+use App\Http\Controllers\Api\UsersRelationController;
 use App\Http\Controllers\Api\TagController;
 use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\ImageController;
@@ -92,11 +92,14 @@ Route::middleware('auth:sanctum')->group(function () {
     //Search
     Route::get('/search/{q}', [SearchController::class, 'getResult']);
     
-    Route::post('users/{userId}/subscribe', [SubscriptionController::class, 'subscribe']);
-    Route::delete('users/{userId}/unsubscribe', [SubscriptionController::class, 'unSubscribe']);
-    Route::post('users/{userId}/accept-subscription-request', [SubscriptionController::class, 'acceptSubscriptionRequest']);
-    Route::delete('users/{userId}/decline-subscription-request', [SubscriptionController::class, 'declineSubscriptionRequest']);
-    Route::delete('users/{userId}/cancel-subscription-request', [SubscriptionController::class, 'cancelSubscriptionRequest']);
+    // User Relations
+    Route::post('users/{userId}/subscribe', [UsersRelationController::class, 'subscribe']);
+    Route::delete('users/{userId}/unsubscribe', [UsersRelationController::class, 'unSubscribe']);
+    Route::post('users/{userId}/accept-subscription-request', [UsersRelationController::class, 'acceptSubscriptionRequest']);
+    Route::delete('users/{userId}/decline-subscription-request', [UsersRelationController::class, 'declineSubscriptionRequest']);
+    Route::delete('users/{userId}/cancel-subscription-request', [UsersRelationController::class, 'cancelSubscriptionRequest']);
+    Route::post('users/{userId}/block', [UsersRelationController::class, 'blockUser']);
+    Route::delete('users/{userId}/unblock', [UsersRelationController::class, 'unblockUser']);
 
     // notifications 
     Route::get('/me/notifications', [NotificationsController::class, 'index']);
@@ -104,7 +107,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Report
     Route::post('/submit-report', [ReportController::class, 'submitReport']); 
 
-    Route::delete('remove-follower/{userId}', [SubscriptionController::class, 'removeFollower']);
+    Route::delete('remove-follower/{userId}', [UsersRelationController::class, 'removeFollower']);
 
     // API business routes
     Route::apiResources([

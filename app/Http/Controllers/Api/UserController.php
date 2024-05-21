@@ -35,7 +35,7 @@ class UserController extends Controller
   public function show(int $userId)
   {
     $user = User::findOrFail($userId);
-    
+
     $user->badge;
     $user->total_point = $this->userPointService->userTotalPoints($user->id);
 
@@ -43,6 +43,11 @@ class UserController extends Controller
       $user->userTrophy = [];
       $user->userPostParticipation = [];
       $user->follower = [];
+      $user->following = [];
+    } else if (!$this->userService->isUserUnblocked($user->id)) {
+      $user->userTrophy = [];
+      $user->userPostParticipation = [];
+      $user->follower->load('follower')->where('follower_id', $user->id)->first();
       $user->following = [];
     } else {
       $user->userTrophy;

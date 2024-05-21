@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Comment;
 use App\Models\Like;
 use App\Models\Post;
-use App\Models\Subscription;
+use App\Models\UsersRelation;
 use App\Models\User;
 use App\Services\UserService;
 
@@ -49,7 +49,7 @@ class NotificationsController extends Controller
                 $notif["notification"] = $notification;
             }
             if (isset($notification->data["subscription_id"])) {
-                $subscription = Subscription::where('id', $notification->data["subscription_id"])->firstOrFail();
+                $subscription = UsersRelation::where('id', $notification->data["subscription_id"])->firstOrFail();
                 $notif["subscription"] = $subscription;
                 $user = User::where('id', $subscription->follower_id)->firstOrFail();
                 $user->reward;
