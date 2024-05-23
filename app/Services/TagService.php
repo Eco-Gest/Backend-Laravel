@@ -15,7 +15,7 @@ class TagService
     {
         $allTags = Tag::get();
         $tagsToAttach = [];
-        
+
         foreach ($tags as $tag) {
             if (!in_array($tag['label'], $allTags->pluck('label')->toArray())) {
                 $newTag = Tag::create(['label' => $tag['label']]);
@@ -57,5 +57,17 @@ class TagService
         $postUpdated = $post;
 
         return $postUpdated;
+    }
+
+    public function searchTag(string $q)
+    {
+        $tags = Tag::where('label', 'ILIKE', '%' . $q . '%')->take(5)->get();
+        $res = [];
+        foreach ($tags as $tag) {
+            foreach ($tag->tag_post as $tag_post) {
+                $res[] = $tag_post->load('posts')->posts;
+            }
+        }
+        return $res;
     }
 }

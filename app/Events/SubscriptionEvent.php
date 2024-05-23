@@ -3,7 +3,7 @@
 namespace App\Events;
 
 use App\Models\User;
-use App\Models\Subscription;
+use App\Models\UsersRelation;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PresenceChannel;
@@ -23,7 +23,7 @@ class SubscriptionEvent implements ShouldBroadcast
     /**
      * Create a new notification instance.
      */
-    public function __construct(Subscription $subscription)
+    public function __construct(UsersRelation $subscription)
     {
         $this->subscription = $subscription;
         $this->message = $this->subscription->status == "pending" ?

@@ -10,9 +10,9 @@ use App\Notifications\UserSubscribed;
 use Illuminate\Http\Request;
 use App\Services\UserService;
 
-use App\Models\Subscription;
+use App\Models\UsersRelation;
 
-class SubscriptionController extends Controller
+class UsersRelationController extends Controller
 {
     protected UserService $userService;
     public function __construct(UserService $userService)
@@ -29,7 +29,7 @@ class SubscriptionController extends Controller
             return response()->json(['error' => 'User not found.'], 404);
         }
 
-        $userAlreadySubscribed = Subscription::where(['follower_id' => $userAuthenticated->id, 'following_id' => $userId])
+        $userAlreadySubscribed = UsersRelation::where(['follower_id' => $userAuthenticated->id, 'following_id' => $userId])
             ->where(function ($query) {
                 $query->where('status', 'approved')->orWhere('status', 'pending');
             });
@@ -42,7 +42,7 @@ class SubscriptionController extends Controller
             return response()->json(['error' => 'Impossible to subscribe to yourself'], 400);
         }
 
-        $subscription = Subscription::create([
+        $subscription = UsersRelation::create([
             'follower_id' => $userAuthenticated->id,
             'following_id' => $userId,
             'status' => 'pending',
@@ -68,7 +68,7 @@ class SubscriptionController extends Controller
             return response()->json(['error' => 'User not found.'], 404);
         }
 
-        $userSubscriptionExists = Subscription::where(['follower_id' => $userAuthenticated->id, 'following_id' => $userId, 'status' => 'approved']);
+        $userSubscriptionExists = UsersRelation::where(['follower_id' => $userAuthenticated->id, 'following_id' => $userId, 'status' => 'approved']);
         if ($userSubscriptionExists->count() == 0) {
             return response()->json(['error' => 'Subscription not found.'], 404);
         }
@@ -89,7 +89,7 @@ class SubscriptionController extends Controller
             return response()->json(['error' => 'User not found.'], 404);
         }
 
-        $subscription = Subscription::where(['following_id' => $userAuthenticated->id, 'follower_id' => $userId, 'status' => 'pending'])->firstOrFail();
+        $subscription = UsersRelation::where(['following_id' => $userAuthenticated->id, 'follower_id' => $userId, 'status' => 'pending'])->firstOrFail();
         if ($subscription->count() == 0) {
             return response()->json(['error' => 'Subscription request not found.'], 404);
         }
@@ -117,7 +117,7 @@ class SubscriptionController extends Controller
             return response()->json(['error' => 'User not found.'], 404);
         }
 
-        $subscription = Subscription::where(['follower_id' => $userAuthenticated->id, 'following_id' => $userId, 'status' => 'pending'])->firstOrFail();
+        $subscription = UsersRelation::where(['follower_id' => $userAuthenticated->id, 'following_id' => $userId, 'status' => 'pending'])->firstOrFail();
         if ($subscription->count() == 0) {
             return response()->json(['error' => 'Subscription request not found.'], 404);
         }
@@ -139,7 +139,7 @@ class SubscriptionController extends Controller
             return response()->json(['error' => 'User not found.'], 404);
         }
 
-        $subscription = Subscription::where(['following_id' => $userAuthenticated->id, 'follower_id' => $userId, 'status' => 'pending']);
+        $subscription = UsersRelation::where(['following_id' => $userAuthenticated->id, 'follower_id' => $userId, 'status' => 'pending']);
         if ($subscription->count() == 0) {
             return response()->json(['error' => 'Subscription request not found.'], 404);
         }
@@ -150,8 +150,46 @@ class SubscriptionController extends Controller
     {
         $userAuthenticated = $this->userService->getUser();
 
-        $subscription = Subscription::where(['following_id' => $userAuthenticated->id, 'follower_id' => $userId, 'status' => 'approved'])->firstOrFail();
+        $subscription = UsersRelation::where(['following_id' => $userAuthenticated->id, 'follower_id' => $userId, 'status' => 'approved'])->firstOrFail();
         $subscription->delete();
         return response()->json('Followed removed');
+    }
+
+    /**
+     * Block a user
+     * @param int $userId
+     */
+    public function blockUser(int $userId)
+    {
+        $userAuthenticated = $this->userService->getUser();
+
+        $subscription = UsersRelation::where(['follower_id' => $userAuthenticated->id, 'following_id' => $userId])->first();
+        if ($subscription == null) {
+            $subscription = UsersRelation::create([
+                'follower_id' => $userAuthenticated->id,
+                'following_id' => $userId,
+                'status' => 'blocked',
+            ]);
+        } else {
+            $subscription->status = 'blocked';
+        }
+
+        $subscription->save();
+        return response()->json('User blocked successfully');
+    }
+
+
+    /**
+     * unBlock a user
+     * @param int $userId
+     */
+    public function unblockUser(int $userId)
+    {
+        $userAuthenticated = $this->userService->getUser();
+
+        $subscription = UsersRelation::where(['follower_id' => $userAuthenticated->id, 'following_id' => $userId, 'status' => 'blocked'])->firstOrFail();
+        $subscription->delete();
+
+        return response()->json('User unblocked successfully');
     }
 }

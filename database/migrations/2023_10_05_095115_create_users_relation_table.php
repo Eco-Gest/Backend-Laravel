@@ -10,7 +10,7 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::create('subscriptions', function (Blueprint $table) {
+        Schema::create('users_relation', function (Blueprint $table) {
             $table->id();
             $table->foreignId('follower_id')->constrained(
                 table: 'users',
@@ -20,7 +20,7 @@ return new class extends Migration {
                 table: 'users',
                 indexName: 'following_id'
             )->cascadeOnDelete();
-            $table->enum('status', ['approved', 'pending', 'denied']);
+            $table->enum('status', ['approved', 'pending', 'denied', 'blocked']);
             $table->timestamps();
         });
     }

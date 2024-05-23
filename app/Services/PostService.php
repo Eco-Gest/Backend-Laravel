@@ -7,9 +7,19 @@ use App\Models\Tag;
 use App\Models\UserPointCategory;
 use App\Models\UserPostParticipation;
 use DateTime;
+use Illuminate\Database\Query\JoinClause;
 
 class PostService
 {
+    protected UserService $userService;
+
+    protected TagService $tagService;
+
+    public function __construct(UserService $userService, TagService $tagService)
+    {
+        $this->userService = $userService;
+        $this->tagService = $tagService;
+    }
 
     public function addAuthorPostToUserPostParticipation(Post $post)
     {
@@ -44,29 +54,37 @@ class PostService
         }
     }
 
-    public function searchByTitleOrDescriptionOrTag(string $q)
+    public function searchPost(string $q)
     {
+        $posts_by_tags = $this->tagService->searchTag($q);
         // Participant lists with details
         $posts = Post::where('title', 'ILIKE', '%' . $q . '%')
             ->orWhere('description', 'ILIKE', '%' . $q . '%')
-            // todo :
-            // rechercher pour inclure les tags avec une fonction dans un orWhere
-            // ->orWhere('tag', 'ILIKE', '%' . $q . '%')
             ->take(10)
             ->get();
 
-        foreach ($posts as $post) {
-            foreach ($post->userPostParticipation as $userPostParticipation) {
-                $userPostParticipation->users;
+        foreach ($posts_by_tags as $post) {
+            if(!$posts->where('id', $post->id)) {
+                $posts->push($post);
             }
-            $post->category;
-            $post->tag;
-            $post->like;
-            $post->comment;
-            $post->user->badge;
         }
 
-        return $posts;
+        $res = [];
+        foreach ($posts as $key => $post) {
+            if ($this->userService->checkIfCanAccessToRessource($post->author_id) && $this->userService->isUserUnblocked($post->author_id)) {
+                foreach ($post->userPostParticipation as $userPostParticipation) {
+                    $userPostParticipation->users;
+                }
+                $post->category;
+                $post->tag;
+                $post->like;
+                $post->comment;
+                $post->user->badge;
+                $res[] = $post;
+            }
+        }
+
+        return $res;
     }
 
     public function getPostsByTag(string $tag)
