@@ -17,7 +17,6 @@ use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\ImageController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use Knuckles\Scribe\Attributes\Header;
 
 /*
 |--------------------------------------------------------------------------
@@ -34,6 +33,8 @@ use Knuckles\Scribe\Attributes\Header;
 
 Route::middleware('api_key')->group(
     function () {
+
+        
 
         // Authentication
         /**
