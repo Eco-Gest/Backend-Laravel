@@ -22,27 +22,26 @@ class UserService
             ->orWhere('email', 'ILIKE', '%' . $q . '%')
             ->take(10)
             ->get();
-        foreach ($users as $user) {
-            if (!$this->checkIfCanAccessToRessource($user->id)) {
-                $user->userTrophy = [];
-                $user->userPostParticipation = [];
-                $user->follower = [];
-                $user->following = [];
-            } else if (!$this->isUserUnblocked($user->id)) {
-                $user->userTrophy = [];
-                $user->userPostParticipation = [];
-                $user->follower->load('follower')->where('follower_id', $user->id)->first();
-                $user->following = [];
-            } else {
-                $user->userTrophy;
-                $user->userPostParticipation;
-                $user->follower->load('follower');
-                $user->following->load('following');
-            }
+        $res = [];
+        foreach ($users as $key => $user) {
             $user->badge;
+            if ($this->checkIfCanAccessToRessource($user->id)) {
+                if (!$this->isUserUnblocked($user->id)) {
+                    $user->userTrophy = [];
+                    $user->userPostParticipation = [];
+                    $user->follower->load('follower')->where('follower_id', $user->id)->first();
+                    $user->following = [];
+                } else {
+                    $user->userTrophy;
+                    $user->userPostParticipation;
+                    $user->follower->load('follower');
+                    $user->following->load('following');
+                }
+                $res[] = $user;
+            }
         }
 
-        return $users;
+        return $res;
     }
 
     public function checkIfCanAccessToRessource($authorId): bool
@@ -51,6 +50,10 @@ class UserService
             return true;
         $author = User::where("id", $authorId)->firstOrFail();
         $userAuthenticated = auth()->user();
+
+        if (UsersRelation::where(['status' => 'blocked', 'follower_id' => $authorId, 'following_id' => $userAuthenticated->id])->count() > 0) {
+            return false;
+        }
 
         if (!$userAuthenticated || !$author) {
             return response()->json(['error' => 'User not found.'], 404);

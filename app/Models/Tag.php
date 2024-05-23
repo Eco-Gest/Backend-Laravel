@@ -19,8 +19,8 @@ class Tag extends Model
         'label',
     ];
 
-    public function posts()
+    public function tag_post()
     {
-        return $this->belongsToMany(Post::class, 'tag_post', 'tag_id', 'post_id');
+        return $this->hasMany(TagPost::class);
     }
 }

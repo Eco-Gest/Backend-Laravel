@@ -118,7 +118,7 @@ class PostController extends Controller
     {
         $post = Post::where('id', $id)->firstOrFail();
         if (!$this->userService->checkIfCanAccessToRessource($post->author_id) || !$this->userService->isUserUnblocked($post->author_id)) {
-            return response()->json(['error' => 'Access denied'], 400);
+            return response()->json(['error' => 'Access denied'], 403);
         }
 
         if (!$post) {

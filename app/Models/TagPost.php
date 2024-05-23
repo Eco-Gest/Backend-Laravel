@@ -21,13 +21,11 @@ class TagPost extends Model
 
     public function tags()
     {
-        return $this->hasMany(Tag::class, 'tag_id', '');
+        return $this->belongsTo(Tag::class, 'tag_id');
     }
 
     public function posts()
     {
-        return $this->hasMany(Post::class, 'post_id');
+        return $this->belongsTo(Post::class, 'post_id');
     }
-
-
 }

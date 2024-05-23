@@ -24,9 +24,9 @@ class SearchController extends Controller
         // Participants list with details
         $users = $this->userService->searchByUsernameOrEmail($q);
         $result['users'] = $users;
-
+        
         // Posts list with details
-        $posts = $this->postService->searchByTitleOrDescriptionOrTag($q);
+        $posts = $this->postService->searchPost($q);
         $result['posts'] = $posts;
 
         return response()->json($result);
