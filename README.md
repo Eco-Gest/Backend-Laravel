@@ -31,6 +31,16 @@ ou
 
 `chmod -Rf 777 .`
 
+# API_KEY
+
+- Entrer dans le container app
+- Jouer la commande ci dessous pour entrer en ligne de commande avec tinker
+- `php artisan tinker`
+- Générer une clé avec la commande ci dessous
+- `\Str::random(64)`
+- Copier la clé générée dans le .env pour la variable API_KEY
+- A chaque appel de l'API, il faudra ajouter cette clé dans les headers pour la varialbe X-API-KEY 
+
 ## Jouer les migrations avec seeding  à l'intérieur du container
 
 `php artisan migrate:fresh --seed`
@@ -53,3 +63,7 @@ ou
 # Outil de test pour les mails 
 url : https://mailtrap.io/home
 
+# Documentation de l'API
+
+url : http://localhost:8080:api-doc
+Fonctionne avec l'API Key dans les headers

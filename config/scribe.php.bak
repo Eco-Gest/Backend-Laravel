@@ -14,7 +14,7 @@ return [
     /*
      * A short description of your API. Will be included in the docs webpage, Postman collection and OpenAPI spec.
      */
-    'description' => 'Ecogest',
+    'description' => 'EcO\'Gest',
 
     /*
      * The base URL displayed in the docs. If this is empty, Scribe will use the value of config('app.url') at generation time.
@@ -178,9 +178,7 @@ return [
         /*
          * Middleware to attach to the docs endpoint (if `add_routes` is true).
          */
-        'middleware' => [
-            'api_key'
-        ],
+        'middleware' => [],
     ],
 
     'try_it_out' => [
@@ -443,6 +441,5 @@ INTRO
      * Tell Scribe which connections should be transacted here.
      * If you only use one db connection, you can leave this as is.
      */
-    'database_connections_to_transact' => [config('database.default')],
-    'external' => ['html_attributes' => []]
+    'database_connections_to_transact' => [config('database.default')]
 ];
