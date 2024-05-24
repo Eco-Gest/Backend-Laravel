@@ -174,6 +174,12 @@ class UsersRelationController extends Controller
             $subscription->status = 'blocked';
         }
 
+        $followerSubscription = UsersRelation::where(['following_id' => $userAuthenticated->id, 'follower_id' => $userId])->first();
+
+        if ($followerSubscription != null) {
+            $followerSubscription->delete();
+        }
+        
         $subscription->save();
         return response()->json('User blocked successfully');
     }
