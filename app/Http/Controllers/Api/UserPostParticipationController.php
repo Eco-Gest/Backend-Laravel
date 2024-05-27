@@ -253,17 +253,13 @@ class UserPostParticipationController extends Controller
         $userPostParticipationsInProgress = [];
         foreach ($userPostParticipations as $userPostParticipation) {
             $post = $userPostParticipation->posts;
-            $end_date = new DateTime(date("Y-m-d", strtotime($post->end_date)));
-            $start_date = new DateTime(date("Y-m-d", strtotime($post->start_date)));
             if ($userPostParticipation->posts->type == 'challenge') {
-                if ($start_date < new DateTime() && $end_date > new DateTime()) {
-                    $post = $userPostParticipation->posts;
-                    foreach ($post->userPostParticipation as $userPostParticipation) {
-                        $userPostParticipation->users;
-                    }
-                    $post = $this->postService->loadPostData($post);
-                    $userPostParticipationsInProgress[] = $post;
+                $post = $userPostParticipation->posts;
+                foreach ($post->userPostParticipation as $userPostParticipation) {
+                    $userPostParticipation->users;
                 }
+                $post = $this->postService->loadPostData($post);
+                $userPostParticipationsInProgress[] = $post;
             }
         }
         return response()->json($userPostParticipationsInProgress);
@@ -328,5 +324,4 @@ class UserPostParticipationController extends Controller
 
         return response()->json($userActions);
     }
-
 }
