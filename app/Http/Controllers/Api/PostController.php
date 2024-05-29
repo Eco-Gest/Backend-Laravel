@@ -92,10 +92,12 @@ class PostController extends Controller
         $post = Post::create($validated);
         $this->postService->addAuthorPostToUserPostParticipation($post);
 
-        $userPointCategory = UserPointCategory::where(['user_id' => $user->id, 'category_id' => $category->id])->first();
-        $this->userPointService->updateUserCurrentPointCategory($post, $userPointCategory);
+        if ($post->type != 'challenge') {
+            $userPointCategory = UserPointCategory::where(['user_id' => $user->id, 'category_id' => $category->id])->first();
+            $this->userPointService->updateUserCurrentPointCategory($post, $userPointCategory);
+            $this->userPointService->setNewBadge($user);
+        }
 
-        $this->userPointService->setNewBadge($user);
 
         $post->save();
 
@@ -163,10 +165,11 @@ class PostController extends Controller
 
         $category = Category::where('id', $validated['category_id'])->firstOrFail();
 
-        $userPointCategory = UserPointCategory::where(['user_id' => $user->id, 'category_id' => $category->id])->first();
-        $this->userPointService->updateUserCurrentPointCategoryPostUpdated($post, $validated, $userPointCategory);
-
-        $this->userPointService->setNewBadge($user);
+        if ($post->type != 'challenge') {
+            $userPointCategory = UserPointCategory::where(['user_id' => $user->id, 'category_id' => $category->id])->first();
+            $this->userPointService->updateUserCurrentPointCategoryPostUpdated($post, $validated, $userPointCategory);
+            $this->userPointService->setNewBadge($user);
+        }
 
         if (isset($validated['tags'])) {
             $post = $this->tagService->updateTagsToPost($post, $validated['tags']);
