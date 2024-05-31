@@ -14,6 +14,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Post;
 use App\Models\UserPointCategory;
+use Illuminate\Support\Facades\Cache;
 
 
 class UserPostParticipationController extends Controller
@@ -182,27 +183,33 @@ class UserPostParticipationController extends Controller
      */
     public function getPostsByUserCompleted(int $userId)
     {
-        $user = User::where('id', $userId)->firstOrFail();
-        if (!$this->userService->checkIfCanAccessToRessource($userId) || !$this->userService->isUserUnblocked($user->id)) {
-            return response()->json(['error' => 'Access denied'], 403);
+        if (Cache::has('challenges_completed_user_' . $userId)) {
+            return response()->json(Cache::get('challenges_next_user_' . $userId));
         }
-
-        $userPostParticipations = UserPostParticipation::where(['participant_id' => $user->id, 'is_completed' => true])->get();
-        $userPostParticipations->load('posts')->where('type', "challenge");
-
-        $userChallenges = [];
-        foreach ($userPostParticipations as $userPostParticipation) {
-            if ($userPostParticipation->posts->type == 'challenge') {
-                $post = $userPostParticipation->posts;
-                foreach ($post->userPostParticipation as $userPostParticipation) {
-                    $userPostParticipation->users;
-                }
-                $post = $this->postService->loadPostData($post);
-                $userChallenges[] = $post;
+        $res = Cache::remember('challenges_completed_user_' . $userId, 60, function () use ($userId) {
+            $user = User::where('id', $userId)->firstOrFail();
+            if (!$this->userService->checkIfCanAccessToRessource($userId) || !$this->userService->isUserUnblocked($user->id)) {
+                return response()->json(['error' => 'Access denied'], 403);
             }
-        }
 
-        return response()->json($userChallenges);
+            $userPostParticipations = UserPostParticipation::where(['participant_id' => $user->id, 'is_completed' => true])->get();
+            $userPostParticipations->load('posts')->where('type', "challenge");
+
+            $userChallenges = [];
+            foreach ($userPostParticipations as $userPostParticipation) {
+                if ($userPostParticipation->posts->type == 'challenge') {
+                    $post = $userPostParticipation->posts;
+                    foreach ($post->userPostParticipation as $userPostParticipation) {
+                        $userPostParticipation->users;
+                    }
+                    $post = $this->postService->loadPostData($post);
+                    $userChallenges[] = $post;
+                }
+            }
+            return $userChallenges;
+        });
+
+        return response()->json($res);
     }
 
     /**
@@ -241,28 +248,35 @@ class UserPostParticipationController extends Controller
      */
     public function getPostsByUserInProgress(int $userId)
     {
-        $user = User::where('id', $userId)->firstOrFail();
-        $user = User::where('id', $userId)->firstOrFail();
-        if (!$this->userService->checkIfCanAccessToRessource($userId) || !$this->userService->isUserUnblocked($user->id)) {
-            return response()->json(['error' => 'Access denied'], 403);
+        if (Cache::has('challenges_inprogress_user_' . $userId)) {
+            return response()->json(Cache::get('challenges_next_user_' . $userId));
         }
-
-        $userPostParticipations = UserPostParticipation::where(['participant_id' => $user->id, 'is_completed' => false])->get();
-        $userPostParticipations->load('posts')->where('type', "challenge");
-
-        $userPostParticipationsInProgress = [];
-        foreach ($userPostParticipations as $userPostParticipation) {
-            $post = $userPostParticipation->posts;
-            if ($userPostParticipation->posts->type == 'challenge') {
-                $post = $userPostParticipation->posts;
-                foreach ($post->userPostParticipation as $userPostParticipation) {
-                    $userPostParticipation->users;
-                }
-                $post = $this->postService->loadPostData($post);
-                $userPostParticipationsInProgress[] = $post;
+        $res = Cache::remember('challenges_inprogress_user_' . $userId, 60, function () use ($userId) {
+            $user = User::where('id', $userId)->firstOrFail();
+            $user = User::where('id', $userId)->firstOrFail();
+            if (!$this->userService->checkIfCanAccessToRessource($userId) || !$this->userService->isUserUnblocked($user->id)) {
+                return response()->json(['error' => 'Access denied'], 403);
             }
-        }
-        return response()->json($userPostParticipationsInProgress);
+
+            $userPostParticipations = UserPostParticipation::where(['participant_id' => $user->id, 'is_completed' => false])->get();
+            $userPostParticipations->load('posts')->where('type', "challenge");
+
+            $userPostParticipationsInProgress = [];
+            foreach ($userPostParticipations as $userPostParticipation) {
+                $post = $userPostParticipation->posts;
+                if ($userPostParticipation->posts->type == 'challenge') {
+                    $post = $userPostParticipation->posts;
+                    foreach ($post->userPostParticipation as $userPostParticipation) {
+                        $userPostParticipation->users;
+                    }
+                    $post = $this->postService->loadPostData($post);
+                    $userPostParticipationsInProgress[] = $post;
+                }
+            }
+            return $userPostParticipationsInProgress;
+        });
+
+        return response()->json($res);
     }
 
 
@@ -271,30 +285,37 @@ class UserPostParticipationController extends Controller
      */
     public function getPostsByUserNext(int $userId)
     {
-        $user = User::where('id', $userId)->firstOrFail();
-        if (!$this->userService->checkIfCanAccessToRessource($userId) || !$this->userService->isUserUnblocked($user->id)) {
-            return response()->json(['error' => 'Access denied'], 403);
+        if (Cache::has('challenges_next_user_' . $userId)) {
+            return response()->json(Cache::get('challenges_next_user_' . $userId));
         }
+        $res = Cache::remember('challenges_next_user_' . $userId, 60, function () use ($userId) {
+            $user = User::where('id', $userId)->firstOrFail();
+            if (!$this->userService->checkIfCanAccessToRessource($userId) || !$this->userService->isUserUnblocked($user->id)) {
+                return response()->json(['error' => 'Access denied'], 403);
+            }
 
-        $userPostParticipations = UserPostParticipation::where(['participant_id' => $user->id, 'is_completed' => false])->get();
-        $userPostParticipations->load('posts')->where('type', "challenge");
+            $userPostParticipations = UserPostParticipation::where(['participant_id' => $user->id, 'is_completed' => false])->get();
+            $userPostParticipations->load('posts')->where('type', "challenge");
 
-        $userPostParticipationsNext = [];
-        foreach ($userPostParticipations as $userPostParticipation) {
-            $post = $userPostParticipation->posts;
-            $start_date = new DateTime(date("Y-m-d", strtotime($post->start_date)));
-            if ($userPostParticipation->posts->type == 'challenge') {
-                if ($start_date != null && $start_date > new DateTime(date("Y-m-d"))) {
-                    $post = $userPostParticipation->posts;
-                    foreach ($post->userPostParticipation as $userPostParticipation) {
-                        $userPostParticipation->users;
+            $userPostParticipationsNext = [];
+            foreach ($userPostParticipations as $userPostParticipation) {
+                $post = $userPostParticipation->posts;
+                $start_date = new DateTime(date("Y-m-d", strtotime($post->start_date)));
+                if ($userPostParticipation->posts->type == 'challenge') {
+                    if ($start_date != null && $start_date > new DateTime(date("Y-m-d"))) {
+                        $post = $userPostParticipation->posts;
+                        foreach ($post->userPostParticipation as $userPostParticipation) {
+                            $userPostParticipation->users;
+                        }
+                        $post = $this->postService->loadPostData($post);
+                        $userPostParticipationsNext[] = $post;
                     }
-                    $post = $this->postService->loadPostData($post);
-                    $userPostParticipationsNext[] = $post;
                 }
             }
-        }
-        return response()->json($userPostParticipationsNext);
+            return $userPostParticipationsNext;
+        });
+
+        return response()->json($res);
     }
 
     /**
@@ -302,26 +323,33 @@ class UserPostParticipationController extends Controller
      */
     public function getUserActions(int $userId)
     {
-        $user = User::where('id', $userId)->firstOrFail();
-        if (!$this->userService->checkIfCanAccessToRessource($userId) || !$this->userService->isUserUnblocked($user->id)) {
-            return response()->json(['error' => 'Access denied'], 403);
+        if (Cache::has('actions_user_' . $userId)) {
+            return response()->json(Cache::get('actions_user_' . $userId));
         }
+        $res = Cache::remember('actions_user_' . $userId, 60, function () use ($userId) {
 
-        $userPostParticipations = UserPostParticipation::where(['participant_id' => $user->id, 'is_completed' => true])->get();
-        $userActions = [];
-
-        foreach ($userPostParticipations as $userPostParticipation) {
-            if ($userPostParticipation->posts->type == 'action') {
-                $post = $userPostParticipation->posts;
-                foreach ($post->userPostParticipation as $userPostParticipation) {
-                    $userPostParticipation->users;
-                }
-                $post = $this->postService->loadPostData($post);
-
-                $userActions[] = $post;
+            $user = User::where('id', $userId)->firstOrFail();
+            if (!$this->userService->checkIfCanAccessToRessource($userId) || !$this->userService->isUserUnblocked($user->id)) {
+                return response()->json(['error' => 'Access denied'], 403);
             }
-        }
 
-        return response()->json($userActions);
+            $userPostParticipations = UserPostParticipation::where(['participant_id' => $user->id, 'is_completed' => true])->get();
+            $userActions = [];
+
+            foreach ($userPostParticipations as $userPostParticipation) {
+                if ($userPostParticipation->posts->type == 'action') {
+                    $post = $userPostParticipation->posts;
+                    foreach ($post->userPostParticipation as $userPostParticipation) {
+                        $userPostParticipation->users;
+                    }
+                    $post = $this->postService->loadPostData($post);
+
+                    $userActions[] = $post;
+                }
+            }
+            return $userActions;
+        });
+
+        return response()->json($res);
     }
 }

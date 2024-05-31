@@ -62,4 +62,9 @@ services:
     networks: 
       - app-network
   
-  
+  redis:
+    image: redis:alpine
+    volumes:
+      - ./docker/redis:/data
+    ports:
+      - "6379:6379"
