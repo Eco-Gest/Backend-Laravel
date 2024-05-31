@@ -35,27 +35,23 @@ class PostController extends Controller
      */
     public function index()
     {
-        if (Cache::has('posts')) {
-            return response()->json(Cache::get('posts'));
-        }
-        $res = Cache::remember('posts', 30, function () {
-            $posts = Post::orderBy('created_at', 'DESC')->paginate(8);
 
-            $postsOfUserCommunity = [];
+        $posts = Post::orderBy('created_at', 'DESC')->paginate(8);
 
-            foreach ($posts as $post) {
-                if ($this->userService->checkIfCanAccessToRessource($post->author_id) && $this->userService->isUserUnblocked($post->author_id)) {
-                    foreach ($post->userPostParticipation as $userPostParticipation) {
-                        $userPostParticipation->users;
-                    }
-                    $post = $this->postService->loadPostData($post);
-                    $postsOfUserCommunity[] = $post;
+        $postsOfUserCommunity = [];
+
+        foreach ($posts as $post) {
+            if ($this->userService->checkIfCanAccessToRessource($post->author_id) && $this->userService->isUserUnblocked($post->author_id)) {
+                foreach ($post->userPostParticipation as $userPostParticipation) {
+                    $userPostParticipation->users;
                 }
+                $post = $this->postService->loadPostData($post);
+                $postsOfUserCommunity[] = $post;
             }
-            return $postsOfUserCommunity;
-        });
+        }
 
-        return response()->json($res);
+
+        return response()->json($postsOfUserCommunity);
     }
 
     /**
