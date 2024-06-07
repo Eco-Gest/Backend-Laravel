@@ -1,12 +1,11 @@
 .PHONY: deploy install
 
 deploy: 
-	ssh o2switch 'cd ~/repositories/ecogestapi && git pull origin main && make install'
+	ssh duha1379@duha1379.odns.fr 'cd ~/repositories/ecogestapi && git pull origin main && make install'
 
-install: 
-	vendor/autoload.php .env public/storage public/build/manifest.json
+install: vendor/autoload.php .env public/storage public/build/manifest.json
 	php artisan cache:clear
-	php artisan migrate
+	php artisan migrate --force
 
 .env: 
 	cp .env.example .env
@@ -22,6 +21,3 @@ vendor/autoload.php: composer.lock
 public/build/manifest.json: package.json
 	npm i 
 	npm run build
-
-tests:
-	php artisan test
