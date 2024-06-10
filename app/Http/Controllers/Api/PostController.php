@@ -41,7 +41,7 @@ class PostController extends Controller
         $postsOfUserCommunity = [];
 
         foreach ($posts as $post) {
-            if ($this->userService->checkIfCanAccessToRessource($post->author_id) && $this->userService->isUserUnblocked($post->author_id)) {
+            if ($this->userService->checkIfCanAccessToResource($post->author_id) && $this->userService->isUserUnblocked($post->author_id)) {
                 foreach ($post->userPostParticipation as $userPostParticipation) {
                     $userPostParticipation->users;
                 }
@@ -127,7 +127,7 @@ class PostController extends Controller
         $res = Cache::remember('post_' . $id, 120, function () use ($id) {
 
             $post = Post::where('id', $id)->firstOrFail();
-            if (!$this->userService->checkIfCanAccessToRessource($post->author_id) || !$this->userService->isUserUnblocked($post->author_id)) {
+            if (!$this->userService->checkIfCanAccessToResource($post->author_id) || !$this->userService->isUserUnblocked($post->author_id)) {
                 return response()->json(['error' => 'Access denied'], 403);
             }
 

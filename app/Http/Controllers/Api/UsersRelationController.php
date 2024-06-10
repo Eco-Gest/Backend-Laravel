@@ -183,9 +183,6 @@ class UsersRelationController extends Controller
         
         $subscription->save();
 
-        Cache::forget('user_' . $userId);
-        Cache::forget('user_' . $userAuthenticated->id);;
-
         return response()->json('User blocked successfully');
     }
 

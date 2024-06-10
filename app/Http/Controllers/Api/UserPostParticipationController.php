@@ -96,7 +96,7 @@ class UserPostParticipationController extends Controller
         $userPostParticipation = UserPostParticipation::where('id', $id)->firstOrFail();
 
         $user = User::where('id', $userPostParticipation->participant_id)->first();
-        if (!$this->userService->checkIfCanAccessToRessource($user->id) || !$this->userService->isUserUnblocked($user->id)) {
+        if (!$this->userService->checkIfCanAccessToResource($user->id) || !$this->userService->isUserUnblocked($user->id)) {
             return response()->json(['error' => 'Access denied'], 403);
         }
 
@@ -169,7 +169,7 @@ class UserPostParticipationController extends Controller
         if (!$userAuthenticated || !$user) {
             return response()->json(['error' => 'User not found.'], 404);
         }
-        if (!$this->userService->checkIfCanAccessToRessource($userId) || !$this->userService->isUserUnblocked($user->id)) {
+        if (!$this->userService->checkIfCanAccessToResource($userId) || !$this->userService->isUserUnblocked($user->id)) {
             return response()->json(['error' => 'Access denied'], 403);
         }
 
@@ -188,7 +188,7 @@ class UserPostParticipationController extends Controller
         }
         $res = Cache::remember('challenges_completed_user_' . $userId, 60, function () use ($userId) {
             $user = User::where('id', $userId)->firstOrFail();
-            if (!$this->userService->checkIfCanAccessToRessource($userId) || !$this->userService->isUserUnblocked($user->id)) {
+            if (!$this->userService->checkIfCanAccessToResource($userId) || !$this->userService->isUserUnblocked($user->id)) {
                 return response()->json(['error' => 'Access denied'], 403);
             }
 
@@ -218,7 +218,7 @@ class UserPostParticipationController extends Controller
     public function getPostsByUserAbandoned(int $userId)
     {
         $user = User::where('id', $userId)->firstOrFail();
-        if (!$this->userService->checkIfCanAccessToRessource($userId) || !$this->userService->isUserUnblocked($user->id)) {
+        if (!$this->userService->checkIfCanAccessToResource($userId) || !$this->userService->isUserUnblocked($user->id)) {
             return response()->json(['error' => 'Access denied'], 403);
         }
 
@@ -254,7 +254,7 @@ class UserPostParticipationController extends Controller
         $res = Cache::remember('challenges_inprogress_user_' . $userId, 60, function () use ($userId) {
             $user = User::where('id', $userId)->firstOrFail();
             $user = User::where('id', $userId)->firstOrFail();
-            if (!$this->userService->checkIfCanAccessToRessource($userId) || !$this->userService->isUserUnblocked($user->id)) {
+            if (!$this->userService->checkIfCanAccessToResource($userId) || !$this->userService->isUserUnblocked($user->id)) {
                 return response()->json(['error' => 'Access denied'], 403);
             }
 
@@ -290,7 +290,7 @@ class UserPostParticipationController extends Controller
         }
         $res = Cache::remember('challenges_next_user_' . $userId, 60, function () use ($userId) {
             $user = User::where('id', $userId)->firstOrFail();
-            if (!$this->userService->checkIfCanAccessToRessource($userId) || !$this->userService->isUserUnblocked($user->id)) {
+            if (!$this->userService->checkIfCanAccessToResource($userId) || !$this->userService->isUserUnblocked($user->id)) {
                 return response()->json(['error' => 'Access denied'], 403);
             }
 
@@ -329,7 +329,7 @@ class UserPostParticipationController extends Controller
         $res = Cache::remember('actions_user_' . $userId, 60, function () use ($userId) {
 
             $user = User::where('id', $userId)->firstOrFail();
-            if (!$this->userService->checkIfCanAccessToRessource($userId) || !$this->userService->isUserUnblocked($user->id)) {
+            if (!$this->userService->checkIfCanAccessToResource($userId) || !$this->userService->isUserUnblocked($user->id)) {
                 return response()->json(['error' => 'Access denied'], 403);
             }
 

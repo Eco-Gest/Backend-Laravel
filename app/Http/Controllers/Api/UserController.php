@@ -36,15 +36,17 @@ class UserController extends Controller
   public function show(int $userId)
   {
     if (Cache::has('user_' . $userId)) {
-      return response()->json(Cache::get('post_' . $userId));
+      $user = User::findOrFail($userId);
+      if ($this->userService->checkIfCanAccessToResource($user->id) && $this->userService->isUserUnblocked($user->id)) {
+        return response()->json(Cache::get('user_' . $userId));
+      } 
     }
-    $res = Cache::remember('post_' . $userId, 60, function () use ($userId) {
       $user = User::findOrFail($userId);
 
       $user->badge;
       $user->total_point = $this->userPointService->userTotalPoints($user->id);
 
-      if (!$this->userService->checkIfCanAccessToRessource($user->id)) {
+      if (!$this->userService->checkIfCanAccessToResource($user->id)) {
         $user->userTrophy = [];
         $user->userPostParticipation = [];
         $user->follower = [];
@@ -60,10 +62,11 @@ class UserController extends Controller
         $user->follower->load('follower');
         $user->following->load('following');
       }
-      return $user;
-    });
 
-    return response()->json($res);
+    if ($this->userService->checkIfCanAccessToResource($user->id) && $this->userService->isUserUnblocked($user->id)) {
+        Cache::put('user_' . $userId, $user, now()->addMinutes(60));
+    }
+    return response()->json($user);
   }
 
   /**
