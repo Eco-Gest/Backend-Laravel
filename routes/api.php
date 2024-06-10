@@ -17,6 +17,8 @@ use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\ImageController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Cache;
+
 
 
 /*
@@ -29,7 +31,6 @@ use Illuminate\Support\Facades\Route;
 | be assigned to the "api" middleware group. Make something great!
 |
 */
-
 // Authentication
 /**
  * @unauthenticated
