@@ -122,28 +122,33 @@ class PostController extends Controller
     public function show(int $id)
     {
         if (Cache::has('post_' . $id)) {
-            return response()->json(Cache::get('post_' . $id));
-        }
-        $res = Cache::remember('post_' . $id, 120, function () use ($id) {
-
             $post = Post::where('id', $id)->firstOrFail();
-            if (!$this->userService->checkIfCanAccessToResource($post->author_id) || !$this->userService->isUserUnblocked($post->author_id)) {
-                return response()->json(['error' => 'Access denied'], 403);
+            if ($this->userService->checkIfCanAccessToResource($post->author_id) && $this->userService->isUserUnblocked($post->author_id)) {
+                return response()->json(Cache::get('post_' . $id));
             }
+        }
+        $post = Post::where('id', $id)->firstOrFail();
+        if (!$this->userService->checkIfCanAccessToResource($post->author_id) || !$this->userService->isUserUnblocked($post->author_id)) {
+            return response()->json(['error' => 'Access denied'], 403);
+        }
 
-            if (!$post) {
-                return response()->json(['error' => 'Post not found.'], 404);
-            }
+        if (!$post) {
+            return response()->json(['error' => 'Post not found.'], 404);
+        }
 
-            foreach ($post->userPostParticipation as $userPostParticipation) {
-                $userPostParticipation->users;
-            }
+        foreach ($post->userPostParticipation as $userPostParticipation) {
+            $userPostParticipation->users;
+        }
 
 
-            return $this->postService->loadPostData($post);
-        });
+        $post = $this->postService->loadPostData($post);
 
-        return response()->json($res);
+
+        if ($this->userService->checkIfCanAccessToResource($post->author_id) && $this->userService->isUserUnblocked($post->author_id)) {
+            Cache::put('post_' . $id, $post, 120);
+        }
+
+        return response()->json($post);
     }
 
     /**
