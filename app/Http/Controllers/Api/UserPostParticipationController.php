@@ -184,8 +184,7 @@ class UserPostParticipationController extends Controller
     public function getPostsByUserCompleted(int $userId)
     {
         if (Cache::has('challenges_completed_user_' . $userId)) {
-            $user = User::where('id', $userId)->firstOrFail();
-            if ($this->userService->checkIfCanAccessToResource($userId) && $this->userService->isUserUnblocked($user->id)) {
+            if ($this->userService->checkIfCanAccessToResource($userId) && $this->userService->isUserUnblocked($userId)) {
                 return response()->json(Cache::get('challenges_completed_user_' . $userId));
             }
         }
@@ -209,7 +208,7 @@ class UserPostParticipationController extends Controller
             }
         }
 
-        if ($this->userService->checkIfCanAccessToResource($userId) && $this->userService->isUserUnblocked($user->id)) {
+        if ($this->userService->checkIfCanAccessToResource($userId) && $this->userService->isUserUnblocked($userId)) {
             Cache::put('challenges_completed_user_' . $userId, 60);
         }
 
@@ -222,11 +221,12 @@ class UserPostParticipationController extends Controller
      */
     public function getPostsByUserAbandoned(int $userId)
     {
-        $user = User::where('id', $userId)->firstOrFail();
-        if (!$this->userService->checkIfCanAccessToResource($userId) || !$this->userService->isUserUnblocked($user->id)) {
+        
+        if (!$this->userService->checkIfCanAccessToResource($userId) || !$this->userService->isUserUnblocked($userId)) {
             return response()->json(['error' => 'Access denied'], 403);
         }
 
+        $user = User::where('id', $userId)->firstOrFail();
         $userPostParticipations = UserPostParticipation::where(['participant_id' => $user->id, 'is_completed' => false])->get();
         $userPostParticipations->load('posts')->where('type', "challenge");
 
@@ -254,8 +254,7 @@ class UserPostParticipationController extends Controller
     {
 
         if (Cache::has('challenges_inprogress_user_' . $userId)) {
-            $user = User::where('id', $userId)->firstOrFail();
-            if ($this->userService->checkIfCanAccessToResource($userId) && $this->userService->isUserUnblocked($user->id)) {
+            if ($this->userService->checkIfCanAccessToResource($userId) && $this->userService->isUserUnblocked($userId)) {
                 return response()->json(Cache::get('challenges_inprogress_user_' . $userId));
             }
         }
@@ -294,8 +293,7 @@ class UserPostParticipationController extends Controller
     public function getPostsByUserNext(int $userId)
     {
         if (Cache::has('challenges_next_user_' . $userId)) {
-            $user = User::where('id', $userId)->firstOrFail();
-            if ($this->userService->checkIfCanAccessToResource($userId) && $this->userService->isUserUnblocked($user->id)) {
+            if ($this->userService->checkIfCanAccessToResource($userId) && $this->userService->isUserUnblocked($userId)) {
                 return response()->json(Cache::get('challenges_next_user_' . $userId));
             }
         }
@@ -337,8 +335,7 @@ class UserPostParticipationController extends Controller
     public function getUserActions(int $userId)
     {
         if (Cache::has('actions_user_' . $userId)) {
-            $user = User::where('id', $userId)->firstOrFail();
-            if ($this->userService->checkIfCanAccessToResource($userId) && $this->userService->isUserUnblocked($user->id)) {
+            if ($this->userService->checkIfCanAccessToResource($userId) && $this->userService->isUserUnblocked($userId)) {
                 return response()->json(Cache::get('actions_user_' . $userId));
             }
         }

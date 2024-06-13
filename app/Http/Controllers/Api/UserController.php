@@ -36,8 +36,7 @@ class UserController extends Controller
   public function show(int $userId)
   {
     if (Cache::has('user_' . $userId)) {
-      $user = User::findOrFail($userId);
-      if ($this->userService->checkIfCanAccessToResource($user->id) && $this->userService->isUserUnblocked($user->id)) {
+      if ($this->userService->checkIfCanAccessToResource($userId) && $this->userService->isUserUnblocked($userId)) {
         return response()->json(Cache::get('user_' . $userId));
       } 
     }

@@ -122,7 +122,7 @@ class PostController extends Controller
     public function show(int $id)
     {
         if (Cache::has('post_' . $id)) {
-            $post = Post::where('id', $id)->firstOrFail();
+            $post =  Cache::get('post_'. $id);
             if ($this->userService->checkIfCanAccessToResource($post->author_id) && $this->userService->isUserUnblocked($post->author_id)) {
                 return response()->json(Cache::get('post_' . $id));
             }
