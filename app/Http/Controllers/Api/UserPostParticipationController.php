@@ -209,7 +209,7 @@ class UserPostParticipationController extends Controller
         }
 
         if ($this->userService->checkIfCanAccessToResource($userId) && $this->userService->isUserUnblocked($userId)) {
-            Cache::put('challenges_completed_user_' . $userId, 60);
+            Cache::put('challenges_completed_user_' . $userId, $userChallenges, 60);
         }
 
 
@@ -280,7 +280,7 @@ class UserPostParticipationController extends Controller
         }
 
         if ($this->userService->checkIfCanAccessToResource($userId) && $this->userService->isUserUnblocked($user->id)) {
-            Cache::put('challenges_inprogress_user_' . $userId, 60);
+            Cache::put('challenges_inprogress_user_' . $userId, $userPostParticipationsInProgress, 60);
         }
 
         return response()->json($userPostParticipationsInProgress);
@@ -323,7 +323,7 @@ class UserPostParticipationController extends Controller
         }
 
         if ($this->userService->checkIfCanAccessToResource($userId) && $this->userService->isUserUnblocked($user->id)) {
-            Cache::put('challenges_next_user_' . $userId, 60);
+            Cache::put('challenges_next_user_' . $userId, $userPostParticipationsNext, 60);
         }
 
         return response()->json($userPostParticipationsNext);
@@ -360,7 +360,7 @@ class UserPostParticipationController extends Controller
         }
 
         if ($this->userService->checkIfCanAccessToResource($userId) && $this->userService->isUserUnblocked($user->id)) {
-            Cache::put('actions_user_' . $userId, 60);
+            Cache::put('actions_user_' . $userId, $userActions, 60);
         }
 
         return response()->json($userActions);
