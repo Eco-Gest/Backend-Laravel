@@ -17,6 +17,9 @@ use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\ImageController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Cache;
+
+
 
 /*
 |--------------------------------------------------------------------------
@@ -30,7 +33,6 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('image/{path}', [ImageController::class, 'getImage'])->where('path', '.*');
-
 
 Route::middleware('api_key')->group(
     function () {

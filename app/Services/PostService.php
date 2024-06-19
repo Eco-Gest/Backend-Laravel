@@ -71,7 +71,7 @@ class PostService
 
         $res = [];
         foreach ($posts as $key => $post) {
-            if ($this->userService->checkIfCanAccessToRessource($post->author_id) && $this->userService->isUserUnblocked($post->author_id)) {
+            if ($this->userService->checkIfCanAccessToResource($post->author_id) && $this->userService->isUserUnblocked($post->author_id)) {
                 foreach ($post->userPostParticipation as $userPostParticipation) {
                     $userPostParticipation->users;
                 }
