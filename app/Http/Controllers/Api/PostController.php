@@ -124,7 +124,7 @@ class PostController extends Controller
         if (Cache::has('post_' . $id)) {
             $post =  Cache::get('post_'. $id);
             if ($this->userService->checkIfCanAccessToResource($post->author_id) && $this->userService->isUserUnblocked($post->author_id)) {
-                return response()->json(Cache::get('post_' . $id));
+                return response()->json($post);
             }
         }
         $post = Post::where('id', $id)->firstOrFail();
