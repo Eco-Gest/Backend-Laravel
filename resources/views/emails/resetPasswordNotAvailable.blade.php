@@ -10,13 +10,9 @@
 <body>
     <h2>Mot de passe oublié ?</h2>
 
-    <!-- lien vers le site web flutter pour réinitialiser le mdp  -->
-    <a href="http://localhost:3000/reset-password?token={{ $data['token'] }}">
-        <button>Réinitialisez mon mot de passe</button>
-    </a>
-
     <p> <span>
-        Attention, le lien expire dans 15 minutes.
+        La fonctionnalité n'est pas encore disponible, pour changer de mot de passe, veuillez nous contacter : </span> <a
+        href=mailto:"contact@ecogest.org">contact@ecogest.org</a>
         </span></p>
     <p> <span>Si vous n'êtez pas à l'origine de cette demande, veuillez le signaler à : </span> <a
             href=mailto:"contact@ecogest.org">contact@ecogest.org</a>
