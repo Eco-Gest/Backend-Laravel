@@ -161,6 +161,11 @@ class PostController extends Controller
 
         $post = Post::where('id', $id)->firstOrFail();
 
+        // check if there is no participants to allow the update
+        if($post->userPostParticipation()->count() > 1){
+            return response()->json(['error' => 'You can not update a post with participants.'], 409);
+        }
+
         $validated = $request->validate([
             'category_id' => 'integer',
             "tags" => "nullable|array",
