@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Services\UserPointService;
 use App\Services\UserService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class UserController extends Controller
 {
@@ -34,31 +35,46 @@ class UserController extends Controller
 
   public function show(int $userId)
   {
-    $user = User::findOrFail($userId);
-
-    $user->badge;
-    $user->total_point = $this->userPointService->userTotalPoints($user->id);
-
-    if (!$this->userService->checkIfCanAccessToRessource($user->id)) {
-      $user->userTrophy = [];
-      $user->userPostParticipation = [];
-      $user->follower = [];
-      $user->following = [];
-    } else if (!$this->userService->isUserUnblocked($user->id)) {
-      $user->userTrophy = [];
-      $user->userPostParticipation = [];
-      $user->follower->load('follower')->where('follower_id', $user->id)->first();
-      $user->following = [];
-    } else {
-      $user->userTrophy;
-      $user->userPostParticipation;
-      $user->follower->load('follower');
-      $user->following->load('following');
+    if (Cache::has('user_' . $userId)) {
+      if ($this->userService->checkIfCanAccessToResource($userId) && $this->userService->isUserUnblocked($userId)) {
+        return response()->json(Cache::get('user_' . $userId));
+      } 
     }
+      $user = User::findOrFail($userId);
 
+      $user->badge;
+      $user->total_point = $this->userPointService->userTotalPoints($user->id);
+
+      if (!$this->userService->checkIfCanAccessToResource($user->id)) {
+        $user->userTrophy = [];
+        $user->userPostParticipation = [];
+        $user->follower = [];
+        $user->following = [];
+      } else if (!$this->userService->isUserUnblocked($user->id)) {
+        $user->userTrophy = [];
+        $user->userPostParticipation = [];
+        $user->follower->load('follower')->where('follower_id', $user->id)->first();
+        $user->following = [];
+      } else {
+        $user->userTrophy;
+        $user->userPostParticipation;
+        $user->follower->load('follower');
+        $user->following->load('following');
+      }
+
+    if ($this->userService->checkIfCanAccessToResource($user->id) && $this->userService->isUserUnblocked($user->id)) {
+        Cache::put('user_' . $userId, $user, now()->addMinutes(60));
+    }
     return response()->json($user);
   }
 
+  /**
+   * Update the user data.
+   * Remove cache by key if exists.
+   *
+   * @param  \Illuminate\Http\Request  $request
+   * @return \Illuminate\Http\Response
+   */
   public function update(Request $request)
   {
     $user = $this->userService->getUser();
@@ -74,15 +90,29 @@ class UserController extends Controller
     ]);
 
     $user->update($validated);
+
+    if (Cache::has('user' . $user->id)) {
+      Cache::forget('user_' . $user->id);
+    }
+
     return response()->json($user);
 
   }
 
+
+  /**
+   * Remove the user by id
+   * Remove cache by key if exists.
+   */
   public function destroy()
   {
     $user = $this->userService->getUser();
     $user->deleteUserActionsPosts($user->id);
+
+    if (Cache::has('user' . $user->id)) {
+      Cache::forget('user_' . $user->id);
+    }
+
     $user->delete();
   }
-
 }

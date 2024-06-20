@@ -1,3 +1,10 @@
 /vendor/
 .env
 /storage/
+
+!docker/volumes/redis
+docker/volumes/redis/*
+!docker/volumes/redis/.gitkeep
+
+.DS_Store
+.idea

@@ -45,7 +45,7 @@ class UserPointService
     public function updateUserCurrentPointCategoryPostUpdated(Post $post, array $updatedPost, ?UserPointCategory $userPointCategory)
     {
         $nbDays = $this->getPostNbDays($post->start_date, $post->end_date, $post->type);
-        $updatedPostNbDays = $this->getPostNbDays($updatedPost['start_date'] ?? "", $updatedPost['end_date'] ?? "", $updatedPost['type']);
+        $updatedPostNbDays = $this->getPostNbDays($updatedPost['start_date'] ?? "", $updatedPost['end_date'] ?? "", $updatedPost['type'] ?? "");
 
         if (
             $nbDays != $updatedPostNbDays ||
@@ -121,7 +121,7 @@ class UserPointService
 
     private function getPostNbDays(?string $start_date, ?string $end_date, ?string $type): int
     {
-        if (isset($start_date) && isset($end_date) && $type == 'challenge') {
+        if (isset($start_date) && isset($end_date) && isset($type) == 'challenge') {
             $start_date = new DateTime(date("Y-m-d", strtotime($start_date)));
             $end_date = new DateTime(date("Y-m-d", strtotime($end_date)));
             return $start_date->diff($end_date)->days + 1;

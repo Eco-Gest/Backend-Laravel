@@ -17,6 +17,9 @@ use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\ImageController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Cache;
+
+
 
 /*
 |--------------------------------------------------------------------------
@@ -29,12 +32,10 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-
+Route::get('image/{path}', [ImageController::class, 'getImage'])->where('path', '.*');
 
 Route::middleware('api_key')->group(
     function () {
-
-        
 
         // Authentication
         /**
@@ -49,9 +50,6 @@ Route::middleware('api_key')->group(
         Route::post('request-reset-password', [AuthenticationController::class, 'requestResetPassword']);
         Route::post('reset-password', [AuthenticationController::class, 'resetPassword']);
 
-        Route::get('image/{path}', [ImageController::class, 'getImage'])->where('path', '.*');
-
-
         Route::middleware('auth:sanctum')->group(function () {
             // User 
             Route::get('/me', [UserController::class, 'getUserData']);
@@ -61,8 +59,8 @@ Route::middleware('api_key')->group(
             Route::post('change-password', [AuthenticationController::class, 'changePassword']);
 
             // images
-            Route::post('/users/{userId}/uploadImage', [ImageController::class, 'uploadImageUser']);
-            Route::post('/posts/{postId}/uploadImage', [ImageController::class, 'uploadImagePost']);
+            Route::post('users/{userId}/uploadImage', [ImageController::class, 'uploadImageUser']);
+            Route::post('posts/{postId}/uploadImage', [ImageController::class, 'uploadImagePost']);
 
             // other user
             Route::get('users/{userId}', [UserController::class, 'show']);

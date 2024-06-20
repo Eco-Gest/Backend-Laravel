@@ -24,6 +24,6 @@ class ResetPasswordMail extends Mailable
 
     public function build()
     {
-        return $this->from(env('MAIL_FROM_ADDRESS'))->view('emails.resetPassword')->with(['data' => $this->data])->subject('Ecogest mot de passe oublié ?');
+        return $this->from(env('MAIL_FROM_ADDRESS'))->view('emails.resetPasswordNotAvailable')->with(['data' => $this->data])->subject('Ecogest mot de passe oublié ?');
     }
 }

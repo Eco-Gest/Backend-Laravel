@@ -12,6 +12,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Post;
 use App\Models\UserPointCategory;
 use App\Services\UserService;
+use Illuminate\Support\Facades\Cache;
 
 class PostController extends Controller
 {
@@ -30,16 +31,17 @@ class PostController extends Controller
     }
 
     /**
-     * Display a listing of the resource.
+     * Display a listing of posts using redis cache
      */
     public function index()
     {
+
         $posts = Post::orderBy('created_at', 'DESC')->paginate(8);
 
         $postsOfUserCommunity = [];
 
         foreach ($posts as $post) {
-            if ($this->userService->checkIfCanAccessToRessource($post->author_id) && $this->userService->isUserUnblocked($post->author_id)) {
+            if ($this->userService->checkIfCanAccessToResource($post->author_id) && $this->userService->isUserUnblocked($post->author_id)) {
                 foreach ($post->userPostParticipation as $userPostParticipation) {
                     $userPostParticipation->users;
                 }
@@ -47,6 +49,7 @@ class PostController extends Controller
                 $postsOfUserCommunity[] = $post;
             }
         }
+
 
         return response()->json($postsOfUserCommunity);
     }
@@ -92,10 +95,12 @@ class PostController extends Controller
         $post = Post::create($validated);
         $this->postService->addAuthorPostToUserPostParticipation($post);
 
-        $userPointCategory = UserPointCategory::where(['user_id' => $user->id, 'category_id' => $category->id])->first();
-        $this->userPointService->updateUserCurrentPointCategory($post, $userPointCategory);
+        if ($post->type != 'challenge') {
+            $userPointCategory = UserPointCategory::where(['user_id' => $user->id, 'category_id' => $category->id])->first();
+            $this->userPointService->updateUserCurrentPointCategory($post, $userPointCategory);
+            $this->userPointService->setNewBadge($user);
+        }
 
-        $this->userPointService->setNewBadge($user);
 
         $post->save();
 
@@ -112,12 +117,18 @@ class PostController extends Controller
 
 
     /**
-     * Display the specified resource.
+     * Display the post by id using cache.
      */
     public function show(int $id)
     {
+        if (Cache::has('post_' . $id)) {
+            $post =  Cache::get('post_'. $id);
+            if ($this->userService->checkIfCanAccessToResource($post->author_id) && $this->userService->isUserUnblocked($post->author_id)) {
+                return response()->json($post);
+            }
+        }
         $post = Post::where('id', $id)->firstOrFail();
-        if (!$this->userService->checkIfCanAccessToRessource($post->author_id) || !$this->userService->isUserUnblocked($post->author_id)) {
+        if (!$this->userService->checkIfCanAccessToResource($post->author_id) || !$this->userService->isUserUnblocked($post->author_id)) {
             return response()->json(['error' => 'Access denied'], 403);
         }
 
@@ -128,19 +139,32 @@ class PostController extends Controller
         foreach ($post->userPostParticipation as $userPostParticipation) {
             $userPostParticipation->users;
         }
+
+
         $post = $this->postService->loadPostData($post);
+
+
+        if ($this->userService->checkIfCanAccessToResource($post->author_id) && $this->userService->isUserUnblocked($post->author_id)) {
+            Cache::put('post_' . $id, $post, 120);
+        }
 
         return response()->json($post);
     }
 
     /**
-     * Update the specified resource in storage.
+     * Update the post in storage.
+     * Remove cache by key if exists.
      */
     public function update(Request $request, int $id)
     {
         $user = $this->userService->getUser();
 
         $post = Post::where('id', $id)->firstOrFail();
+
+        // check if there is no participants to allow the update
+        if($post->userPostParticipation()->count() > 1){
+            return response()->json(['error' => 'You can not update a post with participants.'], 409);
+        }
 
         $validated = $request->validate([
             'category_id' => 'integer',
@@ -155,7 +179,7 @@ class PostController extends Controller
             'end_date' => 'nullable|date|after_or_equal:start_date'
         ]);
 
-        if ($validated['type'] == 'challenge') {
+        if (isset($validated['type']) == 'challenge') {
             if ($request['start_date'] == null || $request['end_date'] == null) {
                 return response()->json(['error' => 'Start date or end date can not be null.'], 400);
             }
@@ -163,25 +187,36 @@ class PostController extends Controller
 
         $category = Category::where('id', $validated['category_id'])->firstOrFail();
 
-        $userPointCategory = UserPointCategory::where(['user_id' => $user->id, 'category_id' => $category->id])->first();
-        $this->userPointService->updateUserCurrentPointCategoryPostUpdated($post, $validated, $userPointCategory);
-
-        $this->userPointService->setNewBadge($user);
+        if ($post->type != 'challenge') {
+            $userPointCategory = UserPointCategory::where(['user_id' => $user->id, 'category_id' => $category->id])->first();
+            $this->userPointService->updateUserCurrentPointCategoryPostUpdated($post, $validated, $userPointCategory);
+            $this->userPointService->setNewBadge($user);
+        }
 
         if (isset($validated['tags'])) {
             $post = $this->tagService->updateTagsToPost($post, $validated['tags']);
         }
         $post->update($validated);
 
+        if (Cache::has('post_' . $id)) {
+            Cache::forget('post_' . $id);
+        }
+
         return response()->json($post);
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Remove the post by id
+     * Remove cache by key if exists.
      */
     public function destroy(int $id)
     {
         $post = Post::where('id', $id)->firstOrFail();
+
+        if (Cache::has('post_' . $id)) {
+            Cache::forget('post_' . $id);
+        }
+
         $post->delete();
     }
 

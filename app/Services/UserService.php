@@ -25,7 +25,7 @@ class UserService
         $res = [];
         foreach ($users as $key => $user) {
             $user->badge;
-            if ($this->checkIfCanAccessToRessource($user->id)) {
+            if ($this->checkIfCanAccessToResource($user->id)) {
                 if (!$this->isUserUnblocked($user->id)) {
                     $user->userTrophy = [];
                     $user->userPostParticipation = [];
@@ -44,7 +44,7 @@ class UserService
         return $res;
     }
 
-    public function checkIfCanAccessToRessource($authorId): bool
+    public function checkIfCanAccessToResource($authorId): bool
     {
         if ($authorId == null)
             return true;
