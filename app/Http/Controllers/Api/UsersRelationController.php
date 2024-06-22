@@ -49,7 +49,7 @@ class UsersRelationController extends Controller
         ]);
         $user = User::where('id', $userId)->first();
         $user->notify(new UserSubscribed($subscription, $userAuthenticated));
-        event(new SubscriptionEvent($subscription));
+        event(new SubscriptionEvent($subscription, $userAuthenticated));
 
         $subscription->save();
         return response()->json($subscription);

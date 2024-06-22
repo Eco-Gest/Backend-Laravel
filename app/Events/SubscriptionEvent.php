@@ -20,12 +20,15 @@ class SubscriptionEvent implements ShouldBroadcast
 
     public $message;
 
+    public User $user;
+
     /**
      * Create a new notification instance.
      */
-    public function __construct(UsersRelation $subscription)
+    public function __construct(UsersRelation $subscription, User $user)
     {
         $this->subscription = $subscription;
+        $this->user = $user;
         $this->message = $this->subscription->status == "pending" ?
             $this->subscription->follower->username . " a demandé à vous suivre !" :
             $this->subscription->following->username  . " a accepté votre demande d'invitation !";
@@ -37,10 +40,13 @@ class SubscriptionEvent implements ShouldBroadcast
      */
     public function broadcastOn(): array
     {
+        if($this->user->id == $this->subscription->following->id) {
+            return [
+                new PrivateChannel('subscription' . ".user." .  $this->subscription->follower->id)
+            ];
+        }
         return [
-            $this->subscription->status == "pending" ? 
-            new PrivateChannel('subscription' . ".user." .  $this->subscription->following->id) : 
-            new PrivateChannel('subscription' . ".user." .  $this->subscription->follower->id) 
+            new PrivateChannel('subscription' . ".user." .  $this->subscription->following->id) 
         ];
     }
 
