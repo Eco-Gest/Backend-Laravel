@@ -12,11 +12,11 @@ use App\Services\UserService;
 
 class NotificationsController extends Controller
 {
-    
+
     protected UserService $userService;
     public function __construct(UserService $userService)
     {
-      $this->userService = $userService;
+        $this->userService = $userService;
     }
 
     public function index()
@@ -27,39 +27,53 @@ class NotificationsController extends Controller
         foreach ($userAuth->notifications as $notification) {
             $notif = [];
             if (isset($notification->data["like_id"])) {
-                $like = Like::where('id', $notification->data["like_id"])->firstOrFail();
-                $notif["like"] = $like;
-                $user = User::where('id', $like->user_id)->firstOrFail();
-                $user->reward;
-                $notif["user"] = $user;
-                $post = Post::where("id", $like->post_id)->firstOrFail();
-                $notif["post"] = $post;
-                $notif["title"] = $user->username . " a liké votre publication !";
-                $notif["notification"] = $notification;
+                $like = Like::where('id', $notification->data["like_id"])->first();
+                if ($like != null) {
+                    $user = User::where('id', $like->user_id)->first();
+                    $user->reward;
+                    if ($user != null) {
+                        $notif["user"] = $user;
+                        $post = Post::where("id", $like->post_id)->first();
+                        if ($post != null) {
+
+                            $notif["post"] = $post;
+                            $notif["title"] = $user->username . " a liké votre publication !";
+                            $notif["notification"] = $notification;
+                        }
+                    }
+                }
             }
             if (isset($notification->data["comment_id"])) {
-                $comment = Comment::where('id', $notification->data["comment_id"])->firstOrFail();
-                $notif["comment"] = $comment;
-                $user = User::where('id', $comment->author_id)->firstOrFail();
-                $user->reward;
-                $notif["user"] = $user;
-                $post = Post::where("id", $comment->post_id)->firstOrFail();
-                $notif["post"] = $post;
-                $notif["title"] = $user->username . " a commenté votre publication !";
-                $notif["notification"] = $notification;
+                $comment = Comment::where('id', $notification->data["comment_id"])->first();
+                if ($comment != null) {
+                    $notif["comment"] = $comment;
+                    $user = User::where('id', $comment->author_id)->first();
+                    if ($user != null) {
+                        $user->reward;
+                        $notif["user"] = $user;
+                        $post = Post::where("id", $comment->post_id)->first();
+                        if ($post != null) {
+                            $notif["post"] = $post;
+                            $notif["title"] = $user->username . " a commenté votre publication !";
+                            $notif["notification"] = $notification;
+                        }
+                    }
+                }
             }
             if (isset($notification->data["subscription_id"])) {
-                $subscription = UsersRelation::where('id', $notification->data["subscription_id"])->firstOrFail();
-                $notif["subscription"] = $subscription;
-                $user = User::where('id', $subscription->follower_id)->firstOrFail();
-                $user->reward;
-                $notif["user"] = $user;
-                if ($subscription->status == "pending") {
-                    $notif["title"] = $user->username . " a demandé à vous suivre !";
-                } else if ($subscription->status == "approved") {
-                    $notif["title"] = $user->username . " a accepté votre demande d'invitation !";
+                $subscription = UsersRelation::where('id', $notification->data["subscription_id"])->first();
+                if ($subscription != null) {
+                    $notif["subscription"] = $subscription;
+                    $user = User::where('id', $subscription->follower_id)->first();
+                    $user->reward;
+                    $notif["user"] = $user;
+                    if ($subscription->status == "pending") {
+                        $notif["title"] = $user->username . " a demandé à vous suivre !";
+                    } else if ($subscription->status == "approved") {
+                        $notif["title"] = $user->username . " a accepté votre demande d'invitation !";
+                    }
+                    $notif["notification"] = $notification;
                 }
-                $notif["notification"] = $notification;
             }
             $notifications[] = $notif;
         }
