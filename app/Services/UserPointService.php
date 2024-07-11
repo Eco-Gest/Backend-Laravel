@@ -24,24 +24,22 @@ class UserPointService
     {
         $userPointCategory = $this->setUserPointCategory($userPointCategory, $post);
         $nbDays = $this->getPostNbDays($post->start_date, $post->end_date, $post->type);
+    
 
-        $nbPoint = $userPointCategory->current_point + (self::getLevelInPoints($post->level) * $nbDays);
+        $pointsToAdd = self::getLevelInPoints($post->level) * $nbDays;
+        $userPointCategory->current_point += $pointsToAdd;
+        $userPointCategory->total_point += $pointsToAdd;
+    
         $reward = Reward::where('type', 'trophy')->firstOrFail();
-
-        if ($nbPoint <= $reward->point) {
-            $userPointCategory->current_point = $nbPoint;
-        } else {
-            $newCurrentPoint = $nbPoint;
-            while ($newCurrentPoint >= $reward->point) {
-                $newCurrentPoint = $newCurrentPoint - $reward->point;
-                self::newTrophy($userPointCategory);
-            }
-            $userPointCategory->current_point = $newCurrentPoint;
-            $userPointCategory->total_point += $nbPoint - $newCurrentPoint;
+    
+        while ($userPointCategory->current_point >= $reward->point) {
+            $userPointCategory->current_point -= $reward->point;
+            self::newTrophy($userPointCategory);
         }
+    
         $userPointCategory->save();
     }
-
+    
     public function updateUserCurrentPointCategoryPostUpdated(Post $post, array $updatedPost, ?UserPointCategory $userPointCategory)
     {
         $nbDays = $this->getPostNbDays($post->start_date, $post->end_date, $post->type);
