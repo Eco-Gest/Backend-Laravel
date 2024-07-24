@@ -36,7 +36,7 @@ class UserController extends Controller
   public function show(int $userId)
   {
     if (Cache::has('user_' . $userId)) {
-      if ($this->userService->checkIfCanAccessToResource($userId) && $this->userService->isUserUnblocked($userId)) {
+      if ($this->authorize('view', $userId)) {
         return response()->json(Cache::get('user_' . $userId));
       } 
     }
@@ -62,7 +62,7 @@ class UserController extends Controller
         $user->following->load('following');
       }
 
-    if ($this->userService->checkIfCanAccessToResource($user->id) && $this->userService->isUserUnblocked($user->id)) {
+    if ($this->authorize('view', $userId)) {
         Cache::put('user_' . $userId, $user, now()->addMinutes(60));
     }
     return response()->json($user);
@@ -78,6 +78,8 @@ class UserController extends Controller
   public function update(Request $request)
   {
     $user = $this->userService->getUser();
+
+    $this->authorize('update', $user->id);
 
     $validated = $request->validate([
       'email' => 'nullable|string|email',
@@ -107,6 +109,7 @@ class UserController extends Controller
   public function destroy()
   {
     $user = $this->userService->getUser();
+    $this->authorize($user->id);
     $user->deleteUserActionsPosts($user->id);
 
     if (Cache::has('user' . $user->id)) {
