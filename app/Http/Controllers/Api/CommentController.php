@@ -25,11 +25,8 @@ class CommentController extends Controller
     public function store(Request $request, int $postId)
     {
         $user = $this->userService->getUser();
-        $post = Post::where('id', $postId)->first();
-        if (!$post) {
-            return response()->json(['error' => 'Post not found.'], 404);
-        }
-
+        $post = Post::where('id', $postId)->firstOrFail();
+   
         $validated = $request->validate([
             'content' => "required|string",
         ]);
