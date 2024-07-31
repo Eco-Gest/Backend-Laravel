@@ -109,7 +109,7 @@ class UserController extends Controller
   public function destroy()
   {
     $user = $this->userService->getUser();
-    $this->authorize($user->id);
+    $this->authorize('delete', $user->id);
     $user->deleteUserActionsPosts($user->id);
 
     if (Cache::has('user' . $user->id)) {

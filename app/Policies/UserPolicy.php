@@ -13,7 +13,7 @@ class UserPolicy
     protected $userService;
 
     /**
-     * Determine whether the user can view he user profile.
+     * Determine whether the user can view the informations linked to the user.
      */
     public function view($userId): bool
     {
@@ -21,7 +21,7 @@ class UserPolicy
     }
 
     /**
-     * Determine whether the user can update the the user profile.
+     * Determine whether the user can update the informations linked to the user profile.
      */
     public function update($userId): bool
     {
