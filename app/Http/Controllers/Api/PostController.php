@@ -41,7 +41,7 @@ class PostController extends Controller
         $postsOfUserCommunity = [];
 
         foreach ($posts as $post) {
-            if ($this->userService->checkIfCanAccessToResource($post->author_id) && $this->userService->isUserUnblocked($post->author_id)) {
+            if ($this->authorize('view', $post)) {
                 foreach ($post->userPostParticipation as $userPostParticipation) {
                     $userPostParticipation->users;
                 }
@@ -123,12 +123,12 @@ class PostController extends Controller
     {
         if (Cache::has('post_' . $id)) {
             $post =  Cache::get('post_'. $id);
-            if ($this->userService->checkIfCanAccessToResource($post->author_id) && $this->userService->isUserUnblocked($post->author_id)) {
+            if ($this->authorize('view', $post)) {
                 return response()->json($post);
             }
         }
         $post = Post::where('id', $id)->firstOrFail();
-        if (!$this->userService->checkIfCanAccessToResource($post->author_id) || !$this->userService->isUserUnblocked($post->author_id)) {
+        if ($this->authorize('view', $post) === false) {
             return response()->json(['error' => 'Access denied'], 403);
         }
 
@@ -144,7 +144,7 @@ class PostController extends Controller
         $post = $this->postService->loadPostData($post);
 
 
-        if ($this->userService->checkIfCanAccessToResource($post->author_id) && $this->userService->isUserUnblocked($post->author_id)) {
+        if ($this->authorize('view', $post)) {
             Cache::put('post_' . $id, $post, 120);
         }
 
@@ -160,6 +160,8 @@ class PostController extends Controller
         $user = $this->userService->getUser();
 
         $post = Post::where('id', $id)->firstOrFail();
+
+        $this->authorize('update', $post);
 
         // check if there is no participants to allow the update
         if($post->userPostParticipation()->count() > 1){
@@ -212,6 +214,8 @@ class PostController extends Controller
     public function destroy(int $id)
     {
         $post = Post::where('id', $id)->firstOrFail();
+
+        $this->authorize('delete', $post);
 
         if (Cache::has('post_' . $id)) {
             Cache::forget('post_' . $id);
