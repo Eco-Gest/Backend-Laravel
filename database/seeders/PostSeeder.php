@@ -24,7 +24,7 @@ class PostSeeder extends Seeder
         Post::factory()
         ->create([
             'category_id' => 2,
-            'author_id' => 3,
+            'author_id' => 2,
             'title' => "Acheter de l'alcool local",
             'description' => "Acheter de l'alcool local pour le consommmer AVEC ou SANS mon voisin",
             'type' => 'action',
@@ -33,7 +33,7 @@ class PostSeeder extends Seeder
         Post::factory()
         ->create([
             'category_id' => 7,
-            'author_id' => 4,
+            'author_id' => 2,
             'title' => 'Spotify en mode hors-ligne',
             'description' => 'Spotify en mode hors-ligne pour acheter moins de vinyle !',
             'type' => 'action',
@@ -42,7 +42,7 @@ class PostSeeder extends Seeder
         Post::factory()
         ->create([
             'category_id' => 7,
-            'author_id' => 2,
+            'author_id' => 1,
             'title' => 'Recycler mon PC en le passant sous linux',
             'description' => 'Recycler mon PC en le passant sous linux',
             'type' => 'action',
