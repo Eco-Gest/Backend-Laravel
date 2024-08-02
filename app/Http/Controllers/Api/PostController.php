@@ -18,9 +18,9 @@ class PostController extends Controller
 
     protected UserPointService $userPointService;
     protected TagService $tagService;
-
     protected PostService $postService;
     protected UserService $userService;
+
     public function __construct(UserPointService $userPointService, TagService $tagService, PostService $postService, UserService $userService)
     {
         $this->userPointService = $userPointService;
@@ -40,7 +40,7 @@ class PostController extends Controller
         $postsOfUserCommunity = [];
 
         foreach ($posts as $post) {
-            if ($this->authorize('view', $post)) {
+            if ($this->userService->checkIfCanAccessToResource($post->author_id) && $this->userService->isUserUnblocked($post->author_id)) {
                 foreach ($post->userPostParticipation as $userPostParticipation) {
                     $userPostParticipation->users;
                 }
@@ -121,9 +121,7 @@ class PostController extends Controller
     public function show(int $id)
     {
         $post = Post::where('id', $id)->firstOrFail();
-        if ($this->authorize('view', $post) === false) {
-            return response()->json(['error' => 'Access denied'], 403);
-        }
+        $this->authorize('view', $post);
 
         if (!$post) {
             return response()->json(['error' => 'Post not found.'], 404);
@@ -150,7 +148,7 @@ class PostController extends Controller
         $this->authorize('update', $post);
 
         // check if there is no participants to allow the update
-        if($post->userPostParticipation()->count() > 1){
+        if ($post->userPostParticipation()->count() > 1) {
             return response()->json(['error' => 'You can not update a post with participants.'], 409);
         }
 

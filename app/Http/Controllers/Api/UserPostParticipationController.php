@@ -112,7 +112,7 @@ class UserPostParticipationController extends Controller
     public function update(Request $request, int $postId)
     {
         $user = $this->userService->getUser();
-        $this->authorize('update', $user->id);
+        $this->authorize('update', $user);
         $validated = $request->validate([
             'is_completed' => 'boolean',
         ]);
@@ -184,6 +184,7 @@ class UserPostParticipationController extends Controller
     public function getPostsByUserCompleted(int $userId)
     {
         $user = User::where('id', $userId)->firstOrFail();
+        $this->authorize('view', $user);
 
         $userPostParticipations = UserPostParticipation::where(['participant_id' => $user->id, 'is_completed' => true])->get();
         $userPostParticipations->load('posts')->where('type', "challenge");
@@ -208,9 +209,9 @@ class UserPostParticipationController extends Controller
      */
     public function getPostsByUserAbandoned(int $userId)
     {
-        $this->authorize('view', $userId);
-
         $user = User::where('id', $userId)->firstOrFail();
+        $this->authorize('view', $user);
+
         $userPostParticipations = UserPostParticipation::where(['participant_id' => $user->id, 'is_completed' => false])->get();
         $userPostParticipations->load('posts')->where('type', "challenge");
 
@@ -236,9 +237,8 @@ class UserPostParticipationController extends Controller
      */
     public function getPostsByUserInProgress(int $userId)
     {
-        $this->authorize('view', $userId);
-
         $user = User::where('id', $userId)->firstOrFail();
+        $this->authorize('view', $user);
 
         $userPostParticipations = UserPostParticipation::where(['participant_id' => $user->id, 'is_completed' => false])->get();
         $userPostParticipations->load('posts')->where('type', "challenge");
@@ -265,9 +265,8 @@ class UserPostParticipationController extends Controller
      */
     public function getPostsByUserNext(int $userId)
     {
-        $this->authorize('view', $userId);
-
         $user = User::where('id', $userId)->firstOrFail();
+        $this->authorize('view', $user);
 
         $userPostParticipations = UserPostParticipation::where(['participant_id' => $user->id, 'is_completed' => false])->get();
         $userPostParticipations->load('posts')->where('type', "challenge");
@@ -296,9 +295,8 @@ class UserPostParticipationController extends Controller
      */
     public function getUserActions(int $userId)
     {
-        $this->authorize('view', $userId);
-
         $user = User::where('id', $userId)->firstOrFail();
+        $this->authorize('view', $user);
 
         $userPostParticipations = UserPostParticipation::where(['participant_id' => $user->id, 'is_completed' => true])->get();
         $userActions = [];
