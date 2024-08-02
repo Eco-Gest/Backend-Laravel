@@ -14,7 +14,6 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Post;
 use App\Models\UserPointCategory;
-use Illuminate\Support\Facades\Cache;
 
 
 class UserPostParticipationController extends Controller
@@ -184,11 +183,6 @@ class UserPostParticipationController extends Controller
      */
     public function getPostsByUserCompleted(int $userId)
     {
-        $this->authorize('view', $userId);
-        if (Cache::has('challenges_completed_user_' . $userId)) {
-                return response()->json(Cache::get('challenges_completed_user_' . $userId));
-        }
-
         $user = User::where('id', $userId)->firstOrFail();
 
         $userPostParticipations = UserPostParticipation::where(['participant_id' => $user->id, 'is_completed' => true])->get();
@@ -205,8 +199,6 @@ class UserPostParticipationController extends Controller
                 $userChallenges[] = $post;
             }
         }
-
-        Cache::put('challenges_completed_user_' . $userId, $userChallenges, 60);
 
         return response()->json($userChallenges);
     }
@@ -246,10 +238,6 @@ class UserPostParticipationController extends Controller
     {
         $this->authorize('view', $userId);
 
-        if (Cache::has('challenges_inprogress_user_' . $userId)) {
-                return response()->json(Cache::get('challenges_inprogress_user_' . $userId));
-        }
-
         $user = User::where('id', $userId)->firstOrFail();
 
         $userPostParticipations = UserPostParticipation::where(['participant_id' => $user->id, 'is_completed' => false])->get();
@@ -268,8 +256,6 @@ class UserPostParticipationController extends Controller
             }
         }
 
-        Cache::put('challenges_inprogress_user_' . $userId, $userPostParticipationsInProgress, 60);
-
         return response()->json($userPostParticipationsInProgress);
     }
 
@@ -280,10 +266,6 @@ class UserPostParticipationController extends Controller
     public function getPostsByUserNext(int $userId)
     {
         $this->authorize('view', $userId);
-
-        if (Cache::has('challenges_next_user_' . $userId)) {
-                return response()->json(Cache::get('challenges_next_user_' . $userId));
-        }
 
         $user = User::where('id', $userId)->firstOrFail();
 
@@ -305,8 +287,6 @@ class UserPostParticipationController extends Controller
                 }
             }
         }
-
-        Cache::put('challenges_next_user_' . $userId, $userPostParticipationsNext, 60);
         
         return response()->json($userPostParticipationsNext);
     }
@@ -317,10 +297,6 @@ class UserPostParticipationController extends Controller
     public function getUserActions(int $userId)
     {
         $this->authorize('view', $userId);
-
-        if (Cache::has('actions_user_' . $userId)) {
-                return response()->json(Cache::get('actions_user_' . $userId));
-        }
 
         $user = User::where('id', $userId)->firstOrFail();
 
@@ -338,8 +314,6 @@ class UserPostParticipationController extends Controller
                 $userActions[] = $post;
             }
         }
-
-        Cache::put('actions_user_' . $userId, $userActions, 60);
 
         return response()->json($userActions);
     }

@@ -9,7 +9,6 @@ use App\Models\User;
 use App\Notifications\UserSubscribed;
 use Illuminate\Http\Request;
 use App\Services\UserService;
-use Illuminate\Support\Facades\Cache;
 
 use App\Models\UsersRelation;
 
