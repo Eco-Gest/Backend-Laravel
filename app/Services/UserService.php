@@ -23,22 +23,9 @@ class UserService
             ->take(10)
             ->get();
         $res = [];
-        foreach ($users as $key => $user) {
+        foreach ($users as $user) {
             $user->badge;
-            if ($this->checkIfCanAccessToResource($user->id)) {
-                if (!$this->isUserUnblocked($user->id)) {
-                    $user->userTrophy = [];
-                    $user->userPostParticipation = [];
-                    $user->follower->load('follower')->where('follower_id', $user->id)->first();
-                    $user->following = [];
-                } else {
-                    $user->userTrophy;
-                    $user->userPostParticipation;
-                    $user->follower->load('follower');
-                    $user->following->load('following');
-                }
-                $res[] = $user;
-            }
+            $res[] = $user;
         }
 
         return $res;
