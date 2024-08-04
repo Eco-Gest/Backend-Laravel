@@ -15,10 +15,7 @@ use App\Http\Controllers\Api\UsersRelationController;
 use App\Http\Controllers\Api\TagController;
 use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\ImageController;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Cache;
-
 
 
 /*

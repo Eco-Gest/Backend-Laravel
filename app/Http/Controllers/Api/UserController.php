@@ -7,7 +7,6 @@ use App\Models\User;
 use App\Services\UserPointService;
 use App\Services\UserService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 
 class UserController extends Controller
 {
@@ -35,11 +34,6 @@ class UserController extends Controller
 
   public function show(int $userId)
   {
-    if (Cache::has('user_' . $userId)) {
-      if ($this->authorize('view', $userId)) {
-        return response()->json(Cache::get('user_' . $userId));
-      } 
-    }
       $user = User::findOrFail($userId);
 
       $user->badge;
@@ -62,15 +56,11 @@ class UserController extends Controller
         $user->following->load('following');
       }
 
-    if ($this->authorize('view', $userId)) {
-        Cache::put('user_' . $userId, $user, now()->addMinutes(60));
-    }
     return response()->json($user);
   }
 
   /**
    * Update the user data.
-   * Remove cache by key if exists.
    *
    * @param  \Illuminate\Http\Request  $request
    * @return \Illuminate\Http\Response
@@ -93,10 +83,6 @@ class UserController extends Controller
 
     $user->update($validated);
 
-    if (Cache::has('user' . $user->id)) {
-      Cache::forget('user_' . $user->id);
-    }
-
     return response()->json($user);
 
   }
@@ -104,17 +90,12 @@ class UserController extends Controller
 
   /**
    * Remove the user by id
-   * Remove cache by key if exists.
    */
   public function destroy()
   {
     $user = $this->userService->getUser();
     $this->authorize('delete', $user->id);
     $user->deleteUserActionsPosts($user->id);
-
-    if (Cache::has('user' . $user->id)) {
-      Cache::forget('user_' . $user->id);
-    }
 
     $user->delete();
   }
