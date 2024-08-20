@@ -9,7 +9,6 @@ use App\Models\User;
 use App\Notifications\UserSubscribed;
 use Illuminate\Http\Request;
 use App\Services\UserService;
-use Illuminate\Support\Facades\Cache;
 
 use App\Models\UsersRelation;
 
@@ -101,7 +100,7 @@ class UsersRelationController extends Controller
         $subscription->save();
 
         $userAuthenticated->notify(new UserSubscribed($subscription, $userAuthenticated));
-        event(new SubscriptionEvent($subscription));
+        event(new SubscriptionEvent($subscription, $user));
 
         return response()->json($subscription);
     }
