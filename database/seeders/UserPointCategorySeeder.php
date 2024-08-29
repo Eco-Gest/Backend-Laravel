@@ -16,26 +16,26 @@ class UserPointCategorySeeder extends Seeder
         UserPointCategory::factory()->create([
             'user_id' => 1,
             'category_id' => 1,
-            'current_point' => 250,
-            'total_point' => 800
+            'current_point' => 150,
+            'total_point' => 150
         ]);
         UserPointCategory::factory()->create([
-            'user_id' => 3,
+            'user_id' => 1,
             'category_id' => 2,
-            'current_point' => 300,
-            'total_point' => 800
+            'current_point' => 10,
+            'total_point' => 10
         ]);
         UserPointCategory::factory()->create([
-            'user_id' => 4,
-            'category_id' => 7,
-            'current_point' => 300,
-            'total_point' => 800
+            'user_id' => 2,
+            'category_id' => 2,
+            'current_point' => 10,
+            'total_point' => 10
         ]);
         UserPointCategory::factory()->create([
             'user_id' => 2,
             'category_id' => 7,
-            'current_point' => 300,
-            'total_point' => 800
+            'current_point' => 10,
+            'total_point' => 10
         ]);
     }
 }

@@ -12,16 +12,15 @@ use App\Http\Controllers\Controller;
 use App\Models\Post;
 use App\Models\UserPointCategory;
 use App\Services\UserService;
-use Illuminate\Support\Facades\Cache;
 
 class PostController extends Controller
 {
 
     protected UserPointService $userPointService;
     protected TagService $tagService;
-
     protected PostService $postService;
     protected UserService $userService;
+
     public function __construct(UserPointService $userPointService, TagService $tagService, PostService $postService, UserService $userService)
     {
         $this->userPointService = $userPointService;
@@ -31,7 +30,7 @@ class PostController extends Controller
     }
 
     /**
-     * Display a listing of posts using redis cache
+     * Display a listing of posts 
      */
     public function index()
     {
@@ -117,20 +116,12 @@ class PostController extends Controller
 
 
     /**
-     * Display the post by id using cache.
+     * Display the post by id 
      */
     public function show(int $id)
     {
-        if (Cache::has('post_' . $id)) {
-            $post =  Cache::get('post_'. $id);
-            if ($this->userService->checkIfCanAccessToResource($post->author_id) && $this->userService->isUserUnblocked($post->author_id)) {
-                return response()->json($post);
-            }
-        }
         $post = Post::where('id', $id)->firstOrFail();
-        if (!$this->userService->checkIfCanAccessToResource($post->author_id) || !$this->userService->isUserUnblocked($post->author_id)) {
-            return response()->json(['error' => 'Access denied'], 403);
-        }
+        $this->authorize('view', $post);
 
         if (!$post) {
             return response()->json(['error' => 'Post not found.'], 404);
@@ -140,20 +131,13 @@ class PostController extends Controller
             $userPostParticipation->users;
         }
 
-
         $post = $this->postService->loadPostData($post);
-
-
-        if ($this->userService->checkIfCanAccessToResource($post->author_id) && $this->userService->isUserUnblocked($post->author_id)) {
-            Cache::put('post_' . $id, $post, 120);
-        }
 
         return response()->json($post);
     }
 
     /**
      * Update the post in storage.
-     * Remove cache by key if exists.
      */
     public function update(Request $request, int $id)
     {
@@ -161,8 +145,10 @@ class PostController extends Controller
 
         $post = Post::where('id', $id)->firstOrFail();
 
+        $this->authorize('update', $post);
+
         // check if there is no participants to allow the update
-        if($post->userPostParticipation()->count() > 1){
+        if ($post->userPostParticipation()->count() > 1) {
             return response()->json(['error' => 'You can not update a post with participants.'], 409);
         }
 
@@ -198,24 +184,17 @@ class PostController extends Controller
         }
         $post->update($validated);
 
-        if (Cache::has('post_' . $id)) {
-            Cache::forget('post_' . $id);
-        }
-
         return response()->json($post);
     }
 
     /**
      * Remove the post by id
-     * Remove cache by key if exists.
      */
     public function destroy(int $id)
     {
         $post = Post::where('id', $id)->firstOrFail();
 
-        if (Cache::has('post_' . $id)) {
-            Cache::forget('post_' . $id);
-        }
+        $this->authorize('delete', $post);
 
         $post->delete();
     }
