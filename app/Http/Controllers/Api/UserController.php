@@ -69,7 +69,7 @@ class UserController extends Controller
   {
     $user = $this->userService->getUser();
 
-    $this->authorize('update', $user->id);
+    $this->authorize('update', $user);
 
     $validated = $request->validate([
       'email' => 'nullable|string|email',
@@ -94,7 +94,7 @@ class UserController extends Controller
   public function destroy()
   {
     $user = $this->userService->getUser();
-    $this->authorize('delete', $user->id);
+    $this->authorize('delete', $user);
     $user->deleteUserActionsPosts($user->id);
 
     $user->delete();
