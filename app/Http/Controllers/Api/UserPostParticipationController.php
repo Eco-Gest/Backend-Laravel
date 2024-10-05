@@ -171,7 +171,7 @@ class UserPostParticipationController extends Controller
         if (!$userAuthenticated || !$user) {
             return response()->json(['error' => 'User not found.'], 404);
         }
-        $this->authorize('view', $userId);
+        $this->authorize('view', $user);
 
         $userPostParticipations = UserPostParticipation::where('participant_id', $user->id)->get();
         $userPostParticipations->load('posts');
