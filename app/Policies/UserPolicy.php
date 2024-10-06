@@ -11,12 +11,11 @@ class UserPolicy
 
     use HandlesAuthorization;
     protected $userService;
-
     public function __construct(UserService $userService)
     {
         $this->userService = $userService;
     }
-
+    
     /**
      * Determine whether the user can view the informations linked to the user.
      */
@@ -28,17 +27,18 @@ class UserPolicy
     /**
      * Determine whether the user can update the informations linked to the user profile.
      */
-    public function update($userId): bool
+    public function update(User $authUser, User $user): bool
     {
-        return $userId === $this->userService->getUser();
+        return $authUser->id === $user->id;
     }
+    
 
     /**
      * Determine whether the user can delete the user profile.
      */
-    public function delete($userId): bool
+    public function delete(User $authUser, User $user): bool
     {
-        return $userId === $this->userService->getUser();
-    }
+        return $authUser->id === $user->id;
+    }    
 
 }
