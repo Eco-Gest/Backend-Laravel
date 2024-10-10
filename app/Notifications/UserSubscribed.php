@@ -5,10 +5,10 @@ namespace App\Notifications;
 use App\Models\User;
 use App\Models\UsersRelation;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use Illuminate\Notifications\Messages\BroadcastMessage;
+use Illuminate\Broadcasting\PrivateChannel;
 
 class UserSubscribed extends Notification
 {
@@ -29,7 +29,7 @@ class UserSubscribed extends Notification
         $this->user = $user;
         $this->message = $this->subscription->status == "pending" ?
             $this->subscription->follower->username . " a demandé à vous suivre !" :
-            $this->subscription->following->username  . " a accepté votre demande d'invitation !";
+            $this->subscription->following->username . " a accepté votre demande d'invitation !";
     }
     /**
      * Get the notification's delivery channels.
@@ -66,15 +66,25 @@ class UserSubscribed extends Notification
 
     public function toBroadcast($notifiable)
     {
-        if($this->user->id == $this->subscription->following->id) {
+        if ($this->user->id == $this->subscription->following->id) {
             return new BroadcastMessage([
                 'message' => $this->message,
-                'subscription' =>  $this->subscription->following->id
+                'subscription' => $this->subscription->following->id
             ]);
         }
         return new BroadcastMessage([
             'message' => $this->message,
-            'subscription' =>  $this->subscription->follower->id
+            'subscription' => $this->subscription->follower->id
         ]);
+    }
+
+    public function broadcastOn()
+    {
+        if ($this->user->id == $this->subscription->following->id) {
+            return new PrivateChannel('subscription.user.' . $this->subscription->follower->id);
+        }
+        else {
+            return new PrivateChannel('subscription.user.' . $this->subscription->following->id);
+        }
     }
 }

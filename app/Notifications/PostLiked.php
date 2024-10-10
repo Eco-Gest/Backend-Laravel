@@ -10,6 +10,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use Illuminate\Notifications\Messages\BroadcastMessage;
+use Illuminate\Broadcasting\PrivateChannel;
 
 class PostLiked extends Notification
 {
@@ -71,5 +72,10 @@ class PostLiked extends Notification
                 'message' => $this->message,
                 'post_id' => $this->post->id
             ]);
+    }
+
+    public function broadcastOn()
+    {
+        return new PrivateChannel('like.user.' . $this->post->user->id);
     }
 }
