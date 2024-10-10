@@ -8,12 +8,15 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Notifications\Messages\BroadcastMessage;
 
 class UserSubscribed extends Notification
 {
     use Queueable;
 
     public $subscription;
+
+    public $message;
 
     public User $user;
 
@@ -22,10 +25,12 @@ class UserSubscribed extends Notification
      */
     public function __construct(UsersRelation $subscription, User $user)
     {
-        $this->user = $user;
         $this->subscription = $subscription;
+        $this->user = $user;
+        $this->message = $this->subscription->status == "pending" ?
+            $this->subscription->follower->username . " a demandé à vous suivre !" :
+            $this->subscription->following->username  . " a accepté votre demande d'invitation !";
     }
-
     /**
      * Get the notification's delivery channels.
      *
@@ -33,7 +38,7 @@ class UserSubscribed extends Notification
      */
     public function via(object $notifiable): array
     {
-        return ['database'];
+        return ['database', 'broadcast'];
     }
 
     /**
@@ -57,5 +62,19 @@ class UserSubscribed extends Notification
         return [
             'subscription_id' => $this->subscription->id,
         ];
+    }
+
+    public function toBroadcast($notifiable)
+    {
+        if($this->user->id == $this->subscription->following->id) {
+            return new BroadcastMessage([
+                'message' => $this->message,
+                'subscription' =>  $this->subscription->following->id
+            ]);
+        }
+        return new BroadcastMessage([
+            'message' => $this->message,
+            'subscription' =>  $this->subscription->follower->id
+        ]);
     }
 }
