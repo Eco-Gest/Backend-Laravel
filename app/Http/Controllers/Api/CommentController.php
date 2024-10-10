@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Comment;
 use Illuminate\Http\Request;
 use App\Models\Post;
+use App\Models\User;
 use App\Notifications\PostCommented;
 use App\Services\UserService;
 
@@ -26,7 +27,7 @@ class CommentController extends Controller
     {
         $user = $this->userService->getUser();
         $post = Post::where('id', $postId)->firstOrFail();
-   
+
         $validated = $request->validate([
             'content' => "required|string",
         ]);
@@ -39,9 +40,11 @@ class CommentController extends Controller
 
         $comment->save();
 
-        if ($post->author_id != $user->id) {
-            $post->user->notify(new PostCommented($user, $post, $comment));
-            event(new CommentEvent($user, $post, $comment));
+        foreach ($post->userPostParticipation as $participant) {
+            if ($participant->participant_id != $user->id) {
+                $participant = User::where('id', $participant->participant_id)->first();
+                $participant->notify(new PostCommented($user, $post, $comment));
+            }
         }
 
         return response()->json($comment);

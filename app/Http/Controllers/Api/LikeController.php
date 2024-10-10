@@ -41,10 +41,8 @@ class LikeController extends Controller
 
         $like->save();
 
-
         if ($post->author_id != $user->id) {
-            $post->user->notify(new PostLiked($like));
-            event(new LikeEvent($user, $post, $like));
+            $post->user->notify(new PostLiked($user, $post, $like));
         }
 
         return response()->json($like);
