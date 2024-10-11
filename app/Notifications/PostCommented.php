@@ -9,6 +9,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Broadcasting\PrivateChannel;
 
 class PostCommented extends Notification
 {
@@ -31,6 +32,7 @@ class PostCommented extends Notification
         $this->user = $user;
         $this->post = $post;
         $this->comment = $comment;
+        $this->message = $this->user->username . ' a commenté votre publication !';
     }
 
     /**
@@ -40,9 +42,8 @@ class PostCommented extends Notification
      */
     public function via(object $notifiable): array
     {
-        return ['database'];
+        return ['database', 'broadcast'];
     }
-
     /**
      * Get the mail representation of the notification.
      */
@@ -65,4 +66,18 @@ class PostCommented extends Notification
             'comment_id' => $this->comment->id,
         ];
     }
+
+    public function toBroadcast($notifiable)
+    {
+        return new BroadcastMessage([
+            'message' => $this->message,
+            'post_id' => $this->post->id
+        ]);
+    }
+    
+    public function broadcastOn()
+    {
+        return new PrivateChannel('comment.user.' . $this->post->user->id);
+    }
 }
+
