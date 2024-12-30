@@ -10,7 +10,7 @@ services:
     build:
       context: ./docker/app
       dockerfile: Dockerfile
-    image: php-laravel-10
+    image: php-laravel
     restart: unless-stopped
     tty: true
     working_dir: /var/www
@@ -40,7 +40,7 @@ services:
       - app-network
 
   nginx:
-    image: nginx:1.19.8-alpine
+    image: nginx:latest
     container_name: nginx
     restart: unless-stopped
     tty: true
@@ -51,9 +51,9 @@ services:
         - ./docker/nginx/conf:/etc/nginx/conf.d
     networks: 
         - app-network
-  
+
   adminer:
-    image: 'adminer:4.8.1'
+    image: dockette/adminer
     restart: unless-stopped
     depends_on:
       - db
