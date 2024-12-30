@@ -1,4 +1,4 @@
-name: Deploy
+name: PROD Deploy
 
 on:
   push:
@@ -6,14 +6,14 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     steps:
       - uses: shivammathur/setup-php@v2
         with:
           php-version: '8.1'
       - uses: actions/checkout@v2
-      - uses: actions/setup-node@v3
-        with: 
-          node-version: 16
       - uses: ikalnytskyi/action-setup-postgres@v7
         with:
           username: ecogest
@@ -26,38 +26,26 @@ jobs:
       - name: Copy .env
         run: cp .env.example .env
       - name: Install composer Dependencies
-        run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
-      - name: Install node dependencies
-        run: npm ci
-      - name: Setup Project
-        run: |
-          php artisan config:clear
-          php artisan cache:clear
-          php artisan key:generate
-          npm run build
+        run: composer update && composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
       - name: Directory Permissions
         run: chmod 755 -R storage bootstrap/cache
-      - name: Run Unit tests
-        env:
-          APP_ENV: testing
-          DB_CONNECTION: pgsql
-          DB_USERNAME: laravel_test_user
-          DB_PASSWORD: super_secret
-          DB_DATABASE: laravel_test_db
-        run: php artisan test
+      - name: get runner ip addresses
+        id: ip
+        uses: haythem/public-ip@v1.2
       - name: Deploy to Server
         if: ${{ success() }}
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
-          key: ${{ secrets.SSH_KEY }}
+          password:  ${{ secrets.PASSWORD }}
+          port: ${{ secrets.SSH_PORT }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          key_path: ${{ secrets.SSH_PRIVATE_KEY_PATH }} 
           script_stop: true
           script: |
-            cd apps
-            cd laravel-example
+            cd repositories/ecogestapi
             git pull
-            npm ci
-            npm run prod
+            chmod -Rf 777 .
             composer i
-            php artisan migrate --force
+            php artisan migrate --force 
