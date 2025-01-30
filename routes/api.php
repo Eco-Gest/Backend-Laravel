@@ -47,7 +47,6 @@ Route::middleware('api_key')->group(
 
         Route::post('request-reset-password', [AuthenticationController::class, 'requestResetPassword']);
         Route::post('reset-password', [AuthenticationController::class, 'resetPassword']);
-        Route::post('/send-notification', [PushNotificationController::class, 'sendNotification']);
 
         Route::middleware('auth:sanctum')->group(function () {
             // User 

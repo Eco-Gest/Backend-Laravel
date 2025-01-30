@@ -84,22 +84,19 @@ class PostCommented extends Notification
     }
 
     /**
-     * Envoi une notification push via Pusher Beams.
+     * Send push notification with Pusher Beams.
      */
     private function sendPushNotification($notifiable)
     {
-        // Initialise Pusher Beams
         $beamsClient = new PushNotifications([
             'instanceId' => env('PUSHER_BEAMS_INSTANCE_ID'),
             'secretKey' => env('PUSHER_BEAMS_SECRET_KEY'),
         ]);
 
-        // Récupère les informations nécessaires
-        $interest = 'user-' . $this->post->user->id; // Crée un intérêt unique par utilisateur
+        $interest = 'user-' . $this->post->user->id; 
         $title = 'Nouveau commentaire';
         $body = $this->message;
 
-        // Envoie la notification
         $beamsClient->publishToInterests(
             [$interest],
             [
