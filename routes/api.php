@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\UsersRelationController;
 use App\Http\Controllers\Api\TagController;
 use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\ImageController;
+use App\Http\Controllers\Api\PushNotificationController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -114,6 +115,8 @@ Route::middleware('api_key')->group(
                 'users/{userId}/trophies' => UserTrophyController::class, // user trophies
                 'tags' => TagController::class,
             ]);
+
+            
         });
 
     }
