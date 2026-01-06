@@ -8,16 +8,20 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v2
 
-      - name: Copy files to VPS via SCP
-        uses: appleboy/scp-action@master
-        with:
-          host: ${{ secrets.VPS_IP }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "."
-          target: "/var/www/ecogest/backend"
+      - name: Copy files to VPS via Rsync (Manual)
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.VPS_IP }} >> ~/.ssh/known_hosts
+          
+          # Create destination directory if it doesn't exist working around rsync limitation
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_IP }} "mkdir -p /var/www/ecogest/backend"
+          
+          # Sync files excluding .git and other heavy dev folders
+          rsync -avz --exclude '.git' --exclude '.github' --exclude 'node_modules' --exclude 'vendor' -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no" . ${{ secrets.VPS_USER }}@${{ secrets.VPS_IP }}:/var/www/ecogest/backend
 
       - name: Execute remote ssh commands
         uses: appleboy/ssh-action@master
