@@ -1,0 +1,39 @@
+version: "3.8"
+
+services:
+  app:
+    container_name: ecogest-backend
+    build:
+      context: .
+      dockerfile: docker/app/Dockerfile.prod
+    image: ecogest-backend:latest
+    restart: always
+    working_dir: /var/www
+    volumes:
+      # Mount storage to persist uploaded files and logs
+      - ./storage:/var/www/storage
+    env_file:
+      - .env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - app-network
+
+  nginx:
+    image: nginx:alpine
+    container_name: ecogest-nginx
+    restart: always
+    ports:
+      - "8080:80"
+    volumes:
+      - ./docker/nginx/conf/app.conf:/etc/nginx/conf.d/default.conf
+      - ./public:/var/www/public
+      - ./storage:/var/www/storage
+    depends_on:
+      - app
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
